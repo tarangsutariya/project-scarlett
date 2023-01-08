@@ -12,3 +12,5 @@ config.yaml
 __pycache__
 .vscode
 config.py
+test.db
+instance

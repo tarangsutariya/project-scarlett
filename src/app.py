@@ -11,7 +11,7 @@ from models import db
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = postgres_uri
 app.secret_key=secret_key
-
+app.config["SQLALCHEMY_ECHO"]=True
 db.init_app(app)
 
 

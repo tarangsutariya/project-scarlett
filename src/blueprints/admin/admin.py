@@ -1,8 +1,18 @@
 from flask import Blueprint,session,redirect,url_for,render_template,flash,request
 from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 from models import db
-
+import bcrypt
 admin_bp = Blueprint("admin",__name__,template_folder="templates",static_folder="static")
+
+class admin_user(db.Model):
+    admin_id = db.Column(db.Integer,primary_key=True)
+    username = db.Column(db.String)
+
+
+    
+    
+
 
 
 
@@ -22,7 +32,9 @@ def admin_login_required(f):
 @admin_bp.route("/")
 @admin_login_required
 def admin_dashboard():
-    
+    u = admin_user(admin_id=1,username="HELLO")
+    db.session.add(u)
+    db.session.commit()
     # session["username"]="HLLO"
     #return session["username"]
     return "dashboard"
