@@ -41,11 +41,13 @@
     <main class="container">
      <div class="center">
         <form method="post">
-            <p>Sign in</p>
+            <p>Register</p>
             <label>Username</label>
             <input type="text" name="username">
             <label>Password</label>
             <input type="password" name="password">
+            <label>Confirm Password</label>
+            <input type="password" name="confirm_password">
            
             {% with messages = get_flashed_messages() %}  
             {% if messages %}  
