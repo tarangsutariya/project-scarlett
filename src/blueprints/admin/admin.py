@@ -8,7 +8,6 @@ admin_bp = Blueprint("admin",__name__,template_folder="templates",static_folder=
 class admin_user(db.Model):
     admin_id = db.Column(db.Integer,primary_key=True)
     username = db.Column(db.String)
-    github = db.Column(db.String)
     password_hash = db.Column(db.String(128))
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -17,9 +16,18 @@ class admin_user(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+class admin_github_tokens(db.Model):
+    token_id = db.Column(db.Integer,primary_key=True)
+    token_name = db.Column(db.String)
+    user_id = db.Column(db.Integer)
+    github_token = db.Column(db.String)
 
 
-    
+
+
+     
+
+
     
 
 
@@ -41,9 +49,7 @@ def admin_login_required(f):
 @admin_bp.route("/")
 @admin_login_required
 def admin_dashboard():
-
-
-    return render_template("dashboard.html")
+    return render_template("dashboard.html",username=session["admin_username"])
 
 
 # @admin_bp.route("/check/<password>")
@@ -116,8 +122,23 @@ def admin_register():
     return redirect(url_for("admin.admin_login"))
 
 
+
+@admin_bp.route("/addtoken",methods=["GET","POST"])
+@admin_login_required
+def admin_add_token():
+    if request.method=="GET":
+        return render_template("add_token.html",username=session["admin_username"])
+
 @admin_bp.route("/logout")
 @admin_login_required
 def admin_logout():
     session.pop("admin_username")
     return redirect(url_for("admin.admin_dashboard"))
+
+
+
+@admin_bp.route("/githuboauth")
+@admin_login_required
+def admin_github_oauth():
+    session["admin_pannel"] = True
+    return redirect(url_for("auth.auth_root"))
