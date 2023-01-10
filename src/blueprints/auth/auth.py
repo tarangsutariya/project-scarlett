@@ -1,14 +1,67 @@
 from flask import request,session,Blueprint,render_template,redirect,url_for
-
+from github import Github
 from authlib.integrations.flask_client import OAuth
 from models import db
-from ..admin.admin import admin_github_tokens
+from ..admin.admin import admin_github_tokens,admin_user
+from config import github_client_id,github_client_secret
 
 
 auth_bp = Blueprint("auth",__name__,template_folder="templates",static_folder="static")
 
+oauth = OAuth()
 
-@auth_bp.route("/")
+
+github = oauth.register(
+    name='github',
+    client_id=github_client_id,
+    client_secret=github_client_secret,
+    access_token_url='https://github.com/login/oauth/access_token',
+    access_token_params=None,
+    authorize_url='https://github.com/login/oauth/authorize',
+    authorize_params=None,
+    api_base_url='https://api.github.com/',
+    client_kwargs={'scope': 'user,repo,admin,user:email'},
+)
+
+
+
+@auth_bp.route("/auth")
 def auth_root():
-    return "auth root"
+    github = oauth.create_client('github')
+    redirect_uri = url_for('auth.authorize', _external=True)
+    return github.authorize_redirect(redirect_uri)
+
+
+@auth_bp.route("/authorize")
+def authorize():
+    github = oauth.create_client('github')
+    try:
+       token = github.authorize_access_token()
+    except:
+        return redirect(url_for("auth.auth_root"))
+    resp = github.get('user', token=token)
+   
+   # do something with the token and profile
+    github_client = Github(token["access_token"])
+    try:
+        user_raw_data = github_client.get_user().raw_data
     
+    except:
+        return redirect(url_for("auth.auth_root"))
+    
+
+    if "admin_pannel" in session:
+        username = session["admin_username"]
+        user_id = admin_user.query.filter_by(username=username).first().admin_id
+        session.clear()
+        session["admin_username"]=username
+        curr_count = admin_github_tokens.query.count()+1
+        token_to_insert = admin_github_tokens(token_name=str(curr_count),user_id=user_id,github_token=token["access_token"])
+        db.session.add(token_to_insert)
+        db.session.commit()
+        
+        return redirect(url_for("admin.admin_dashboard"))
+
+    session.clear()
+    return redirect('/')
+
