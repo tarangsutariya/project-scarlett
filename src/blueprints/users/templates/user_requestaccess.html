@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Request access</title>
+    <meta name="description" content="login to admin pannel.">
+   
+
+    <!-- Pico.css -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+
+    <!-- Custom styles for this example -->
+    <link rel="stylesheet" href="./static/custom.css"> 
+  </head>
+
+  <body>
+
+    <!-- Nav -->
+    <nav class="container-fluid">
+      <ul>
+        <li><a href="../" class="contrast" onclick="event.preventDefault()"><strong>Project Scarlett</strong></a></li>
+      </ul>
+      <ul>
+        <li>
+          <details role="list" dir="rtl">
+            <summary aria-haspopup="listbox" role="link" class="secondary">Theme</summary>
+            <ul role="listbox">
+              <li><a href="#" data-theme-switcher="auto">Auto</a></li>
+              <li><a href="#" data-theme-switcher="light">Light</a></li>
+              <li><a href="#" data-theme-switcher="dark">Dark</a></li>
+            </ul>
+          </details>
+        </li>
+        <li>
+            <a href="#" class="secondary"> Log out</a>   
+           </li>
+      </ul>
+    </nav><!-- ./ Nav -->
+
+    <!-- Main -->
+    <main class="container">
+     <div class="center">
+        <form method="post">
+            <p>This Github account is not part of any approved Github orgainisation.Your access will need to be approved by admin.</p>
+            <label>Username</label>
+            <input type="text" name="username" disabled>
+            <label>Message</label>
+            <textarea name="password"></textarea>
+           
+            {% with messages = get_flashed_messages() %}  
+            {% if messages %}  
+                  {% for message in messages %}  
+                       <p style="color: red;">{{ message }}</p>  
+                  {% endfor %}  
+
+                  {% else %}
+                  <br/>  {{ pass }}<br/> 
+            {% endif %}  
+           
+         
+            
+         {% endwith %}  
+
+
+            <button type="submit">Request Access</button>
+        </form>
+       
+     </div>
+    </main><!-- ./ Main -->
+
+    <!-- Footer -->
+    <!-- <footer class="container-fluid">
+     Project-Scarlett
+    </footer> -->
+    <!-- ./ Footer -->
+
+    <!-- Minimal theme switcher -->
+    <script src="./static/js/minimal-theme-switcher.js"></script>
+
+  </body>
+
+</html>

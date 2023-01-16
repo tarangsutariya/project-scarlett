@@ -72,6 +72,33 @@ def authorize():
             db.session.commit()
         
         return redirect(url_for("admin.admin_dashboard"))
+    elif "user_login" in session:
+        g = Github(token["access_token"])
+        org_list = []
+        for org in g.get_user().get_orgs():
+            org_details = {}
+            org_details["org_id"]=org.id
+            org_details["org_name"]=org.name
+            org_list.append(org_details)
+        
+        user_belongs_to_approved_org = False
+        for org in org_list:
+            if admin_token_orgs.query.filter_by(org_id=org["org_id"]).first() != None:
+                user_belongs_to_approved_org = True
+                break
+        if not user_belongs_to_approved_org:
+            print("HI")
+        
+
+
+
+
+
+        return redirect(url_for("users.user_dashboard"))
+
+
+
+
 
     session.clear()
     return redirect('/')
