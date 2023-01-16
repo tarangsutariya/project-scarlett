@@ -3,8 +3,12 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db
 import bcrypt
-admin_bp = Blueprint("admin",__name__,template_folder="templates",static_folder="static")
+from .dashboard_manage import admin_manage
 
+
+
+admin_bp = Blueprint("admin",__name__,template_folder="templates",static_folder="static")
+admin_bp.register_blueprint(admin_manage,url_prefix="/manage")
 class admin_user(db.Model):
     admin_id = db.Column(db.Integer,primary_key=True)
     username = db.Column(db.String)
@@ -23,7 +27,12 @@ class admin_github_tokens(db.Model):
     github_token = db.Column(db.String)
 
 
-
+class admin_token_orgs(db.Model):
+    r_id = db.Column(db.Integer,primary_key=True)
+    token_id = db.Column(db.Integer)
+    org_id = db.Column(db.Integer)
+    org_name = db.Column(db.Integer)
+    
 
      
 
@@ -49,13 +58,27 @@ def admin_login_required(f):
 @admin_bp.route("/")
 @admin_login_required
 def admin_dashboard():
-    return render_template("dashboard.html",username=session["admin_username"])
+    user = admin_user.query.filter_by(username=session["admin_username"]).first()
+    
+    tokens = admin_github_tokens.query.filter_by(user_id=user.admin_id).all()
+    orgs_details = []
+    for token in tokens:
+        
+        orgs = admin_token_orgs.query.filter_by(token_id=token.token_id).all()
+        for org in orgs:
+            curr = {}
+            curr["org_name"]=org.org_name
+            curr["org_id"]=org.org_id
+            curr["token_name"]=token.token_name
+            curr["token_id"]=token.token_id
+            orgs_details.append(curr)
+
+    print(orgs_details)
+
+    return render_template("dashboard.html",username=session["admin_username"],orgs_details=orgs_details)
 
 
-# @admin_bp.route("/check/<password>")
-# def checkpass(password):
-#     u =  admin_user.query.filter_by(username="test1").first()
-#     return str(u.check_password(password))
+
 
 @admin_bp.route("/login",methods=["GET","POST"])
 def admin_login():
@@ -142,3 +165,9 @@ def admin_logout():
 def admin_github_oauth():
     session["admin_pannel"] = True
     return redirect(url_for("auth.auth_root"))
+
+
+@admin_bp.route("/as")
+@admin_login_required
+def modaltest():
+    return render_template("modaltest.html")

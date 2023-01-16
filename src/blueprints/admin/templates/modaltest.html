@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">  
+    <title>Document</title>
+<script src="static/js/modal.js">
+   
+</script>
+<script>
+    let x = 10;
+</script>
+
+
+</head>
+<body>
+   
+    <!-- Button to trigger the modal -->
+<a class="button"
+data-target="modal-example"
+onClick="x=300;toggleModal(event)">
+Launch demo modal
+</button>
+
+<a class="button"
+data-target="modal-example"
+onClick="x=3002;toggleModal(event)">
+Launch demo </button>
+
+<!-- Modal -->
+<dialog id="modal-example">
+<div id="article">
+  <a href="#close"
+    aria-label="Close"
+    class="close"
+    data-target="modal-delete-org"
+    onClick="toggleModal(event)">
+  </a>
+  <h3>Confirm your action!</h3>
+  <p>
+    Cras sit amet maximus risus. 
+    Pellentesque sodales odio sit amet augue finibus pellentesque. 
+    Nullam finibus risus non semper euismod.
+  </p>
+  <footer>
+    <a href="#cancel"
+      role="button"
+      class="secondary"
+      data-target="modal-delete-org"
+      onClick="toggleModal(event)">
+      Cancel
+    </a>
+    <a href="#confirm"
+      role="button" style="background-color: red;"
+      data-target="modal-delete-org"
+      onClick="console.log(x);toggleModal(event)">
+      Delete
+    </a>
+  </footer>
+</div>
+</dialog>
+<script src="./static/js/minimal-theme-switcher.js"></script>
+
+</body>
+</html>

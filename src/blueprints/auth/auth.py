@@ -2,7 +2,7 @@ from flask import request,session,Blueprint,render_template,redirect,url_for
 from github import Github
 from authlib.integrations.flask_client import OAuth
 from models import db
-from ..admin.admin import admin_github_tokens,admin_user
+from ..admin.admin import admin_github_tokens,admin_user,admin_token_orgs
 from config import github_client_id,github_client_secret
 
 
@@ -56,9 +56,20 @@ def authorize():
         session.clear()
         session["admin_username"]=username
         curr_count = admin_github_tokens.query.count()+1
+        
         token_to_insert = admin_github_tokens(token_name=str(curr_count),user_id=user_id,github_token=token["access_token"])
+        
         db.session.add(token_to_insert)
         db.session.commit()
+        token_to_insert.token_name = token_to_insert.token_id
+        
+        db.session.commit()
+        
+        g = Github(token["access_token"])
+        for org in g.get_user().get_orgs():
+            org_to_insert = admin_token_orgs(token_id=token_to_insert.token_id,org_id=org.id,org_name=org.login)
+            db.session.add(org_to_insert)
+            db.session.commit()
         
         return redirect(url_for("admin.admin_dashboard"))
 

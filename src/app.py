@@ -1,7 +1,7 @@
 from flask import Flask
 
 from flask_sqlalchemy import SQLAlchemy
-
+from blueprints.users.users import users_bp
 from blueprints.admin.admin import admin_bp
 from blueprints.auth.auth import auth_bp
 from config import secret_key,postgres_uri
@@ -21,7 +21,11 @@ oauth.init_app(app)
 
 
 app.register_blueprint(admin_bp,url_prefix="/admin")
+
 app.register_blueprint(auth_bp)
+app.register_blueprint(users_bp)
+
+
 
 
 

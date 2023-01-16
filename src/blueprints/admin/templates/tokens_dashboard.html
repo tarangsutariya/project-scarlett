@@ -7,46 +7,17 @@
     <title>Admin Dashboard login</title>
     <meta name="description" content="login to admin pannel.">
    
-    
-
 
     <!-- Pico.css -->
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
- 
+
     <!-- Custom styles for this example -->
     <link rel="stylesheet" href="./static/custom.css"> 
-
-    <!--js-->
-    <script src="static/js/modal.js">
-   
-    </script>
-    <script>
-      let todelete_org = null;
-
-     function set_todelete_org(deleteid,delete_org_name){
-      todelete_org = deleteid;
-      document.getElementById("deleteorg").innerText=delete_org_name;
-     }
-
-      async function deleteorg(todelete){
-        if(todelete_org==null){
-          return;
-        }
-        document.getElementById("loader").style.display="flex";
-        await fetch('./manage/org/delete/'+todelete);
-        location.reload()
-        
-
-        
-      }
-    </script>
-
   </head>
 
   <body>
 
     <!-- Nav -->
-   
     <nav class="container-fluid">
       <ul>
         <li><a href="./" class="contrast" ><strong>Project Scarlett</strong></a></li>
@@ -79,18 +50,17 @@
 
       </ul>
     </nav><!-- ./ Nav -->
-    <a href="#" id="loader" class="container-fluid" style="display: none; justify-content: center;" aria-busy="true"></a>
+
     <!-- Main -->
     
     <main class="container">
-      
-        <p>User Requests</p>
+
         <table role="grid">
             <thead>
               <tr>
                 <th scope="col">#</th>
-                <th scope="col">Username</th>
-                <th scope="col">Message</th>
+                <th scope="col">Token name</th>
+                <th scope="col">Orgainisation associated</th>
                 <th scope="col"> Manage</th>
                 
               </tr>
@@ -99,10 +69,27 @@
               <tr>
                 <th scope="row">1</th>
                 <td>Cell</td>
-                <td>Cell</td>
+                <td>lore</td>
                 <td>
                     <a href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg>
+                    <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M21.2635 2.29289C20.873 1.90237 20.2398 1.90237 19.8493 2.29289L18.9769 3.16525C17.8618 2.63254 16.4857 2.82801 15.5621 3.75165L4.95549 14.3582L10.6123 20.0151L21.2189 9.4085C22.1426 8.48486 22.338 7.1088 21.8053 5.99367L22.6777 5.12132C23.0682 4.7308 23.0682 4.09763 22.6777 3.70711L21.2635 2.29289ZM16.9955 10.8035L10.6123 17.1867L7.78392 14.3582L14.1671 7.9751L16.9955 10.8035ZM18.8138 8.98525L19.8047 7.99429C20.1953 7.60376 20.1953 6.9706 19.8047 6.58007L18.3905 5.16586C18 4.77534 17.3668 4.77534 16.9763 5.16586L15.9853 6.15683L18.8138 8.98525Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M2 22.9502L4.12171 15.1717L9.77817 20.8289L2 22.9502Z"
+                      fill="currentColor"
+                    />
+                     </svg>
                   <span></span>
                     </a>
 
@@ -152,134 +139,12 @@
                 <th scope="col"></th>
                 <td scope="col"></td>
                 <td scope="col"></td>
-                <td scope="col"></td>
+                <td scope="col"> <p><a href="#" role="button" style="margin-top: -6px; padding: 9px 7px 9px 7px;">Add more</a></p> </td>
                 
               </tr>
             </tfoot>
           </table>
-
-
-
-<!--orgs table-->
-
-<p>Allowed github Orginization</p>
-<table role="grid">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Orginization</th>
-        <th scope="col">Token</th>
-        <th scope="col"> Manage</th>
-        
-      </tr>
-    </thead>
-    <tbody>
-    {% if orgs_details|length==0 %}
-    <tr><td>No Orginization availabe</td></tr>
-    {% else %}
-    {% for org in orgs_details %}
-      <tr>
-        <th scope="row">{{ loop.index0+1 }}</th>
-        <td>{{org.org_name}}</td>
-        <td>{{org.token_name}}</td>
-        <td>
-
-            <a data-target="modal-delete-org"
-            onClick="set_todelete_org({{org.org_id}},'{{org.org_name}}');
-            toggleModal(event)">
-            <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
-              fill="currentColor"
-            />
-            <path d="M9 9H11V17H9V9Z" fill="currentColor" />
-            <path d="M13 9H15V17H13V9Z" fill="currentColor" />
-          </svg>
-        
-        </a>
-        
-        
-        </td>
-       
-
-
-      </tr>
-      {% endfor%}
-     {% endif %}
-    </tbody>
-    <tfoot>
-      <tr>
-        <th scope="col"></th>
-        <td scope="col"></td>
-        <td scope="col"></td>
-        <td scope="col"><a href="#">Add</a></td>
-        
-      </tr>
-    </tfoot>
-  </table>
-
-
-
-
-
-
-
-
     </main><!-- ./ Main -->
-
-
-
-
-
-<!-- DELETE Modal -->
-<!-- Modal -->
-<dialog id="modal-delete-org">
-  <article>
-    <a href="#close"
-      aria-label="Close"
-      class="close"
-      data-target="modal-delete-org"
-      onClick="toggleModal(event)">
-    </a>
-    <h3>Are you sure</h3>
-    <p>
-    Do you really want to delete org  <span id="deleteorg"></span>?  
-    </p>
-    <footer>
-      <a href="#cancel"
-        role="button"
-        class="secondary"
-        data-target="modal-delete-org"
-        onClick="toggleModal(event)">
-        Cancel
-      </a>
-      <a href="#confirm"
-        role="button" style="background-color: red;"
-        data-target="modal-delete-org"
-        onClick="deleteorg(todelete_org);toggleModal(event)">
-        Delete
-      </a>
-    </footer>
-  </article>
-  </dialog>
-
-
-
-
-
-
-
-
-
-
 
 
 
