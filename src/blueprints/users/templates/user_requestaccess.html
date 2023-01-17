@@ -43,11 +43,11 @@
     <main class="container">
      <div class="center">
         <form method="post">
-            <p>This Github account is not part of any approved Github orgainisation.Your access will need to be approved by admin.</p>
+            <p>Your access will need to be approved by admin as it is not associated with any approved organisations.</p>
             <label>Username</label>
-            <input type="text" name="username" disabled>
+            <input type="text" name="username" value="{{github_username}}" disabled>
             <label>Message</label>
-            <textarea name="password"></textarea>
+            <textarea name="request_message"></textarea>
            
             {% with messages = get_flashed_messages() %}  
             {% if messages %}  

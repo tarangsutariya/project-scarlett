@@ -44,12 +44,16 @@
     <main class="container">
      <div class="center">
         <form method="post">
+          {% if not notFound%}
             <p>Your request is still not approved please wait for it to be approved..</p>
             <label>Username</label>
-            <input type="text" name="username" value="asd" disabled>
-            <label> Request id : #123</label>
-          
-           
+            <input type="text" name="username" value={{github_username}} disabled>
+            {%endif%}
+            <label> Request id : #{{request_id}}</label>
+          {% if notFound%}
+          <p>Request not found this means either request is invalid or denyed try logging again</p>
+           <a href="./login" role="button">Go to login</a>
+           {% else %}
             {% with messages = get_flashed_messages() %}  
             {% if messages %}  
                   {% for message in messages %}  
@@ -64,8 +68,9 @@
             
          {% endwith %}  
 
-
-            <button  disabled aria-busy="true">Please Wait...</button>
+         
+            <button id="testbutton" aria-busy="true" disabled onclick="preventDefault()">Please Wait...</button>
+            {%endif%}
         </form>
        
      </div>
