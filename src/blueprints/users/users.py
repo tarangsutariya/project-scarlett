@@ -34,3 +34,4 @@ def user_githuboauthlogin():
         return redirect(url_for("users.user_not_approved"))
     session["user_login"] =True
     return redirect(url_for("auth.auth_root"))
+

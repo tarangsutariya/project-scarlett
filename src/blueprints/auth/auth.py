@@ -1,7 +1,7 @@
 from flask import request,session,Blueprint,render_template,redirect,url_for
 from github import Github
 from authlib.integrations.flask_client import OAuth
-from models import db
+from models import db,users,user_orgs
 from ..admin.admin import admin_github_tokens,admin_user,admin_token_orgs
 from config import github_client_id,github_client_secret
 
@@ -39,7 +39,7 @@ def authorize():
        token = github.authorize_access_token()
     except:
         return redirect(url_for("auth.auth_root"))
-    resp = github.get('user', token=token)
+    
    
    # do something with the token and profile
     github_client = Github(token["access_token"])
@@ -49,15 +49,25 @@ def authorize():
     except:
         return redirect(url_for("auth.auth_root"))
     
+    for tkn in admin_github_tokens.query.filter_by(is_oauth_token=True,github_user_id=user_raw_data["id"]).all():
+        tkn.github_token=token["access_token"]
+    db.session.commit()
+    
+    usr = users.query.filter_by(github_user_id=user_raw_data["id"]).first()
+    if usr != None:
+        usr.github_oauth_token = token["access_token"]
+        db.session.commit
+    
 
     if "admin_pannel" in session:
         username = session["admin_username"]
         user_id = admin_user.query.filter_by(username=username).first().admin_id
         session.clear()
         session["admin_username"]=username
-        curr_count = admin_github_tokens.query.count()+1
         
-        token_to_insert = admin_github_tokens(token_name=str(curr_count),user_id=user_id,github_token=token["access_token"])
+        
+        token_to_insert = admin_github_tokens(user_id=user_id,github_token=token["access_token"],
+        is_oauth_token=True,github_user_id=user_raw_data["id"])
         
         db.session.add(token_to_insert)
         db.session.commit()
@@ -67,12 +77,19 @@ def authorize():
         
         g = Github(token["access_token"])
         for org in g.get_user().get_orgs():
+            if admin_token_orgs.query.filter_by(org_id=org.id).first()!= None:
+                continue
             org_to_insert = admin_token_orgs(token_id=token_to_insert.token_id,org_id=org.id,org_name=org.login)
             db.session.add(org_to_insert)
             db.session.commit()
         
         return redirect(url_for("admin.admin_dashboard"))
     elif "user_login" in session:
+        if users.query.filter_by(github_user_id=user_raw_data["id"]).first() != None:
+            session["user_userid"] = users.query.filter_by(github_user_id=user_raw_data["id"]).first().user_id
+            session["user_githubid"]= user_raw_data["id"]
+            session["user_githubusername"]=user_raw_data["login"]
+            return redirect(url_for("users.user_dashboard"))
         g = Github(token["access_token"])
         org_list = []
         for org in g.get_user().get_orgs():
@@ -85,9 +102,10 @@ def authorize():
         for org in org_list:
             if admin_token_orgs.query.filter_by(org_id=org["org_id"]).first() != None:
                 user_belongs_to_approved_org = True
-                break
+                
         if not user_belongs_to_approved_org:
-            print("HI")
+            session["approve_request_not_sent"] = True
+            session["github_oauth_token"] = token["access_token"];
         
 
 

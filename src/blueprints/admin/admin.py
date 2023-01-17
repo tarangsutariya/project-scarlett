@@ -1,10 +1,10 @@
-from flask import Blueprint,session,redirect,url_for,render_template,flash,request
+from flask import Blueprint,session,redirect,url_for,render_template,flash,request,make_response
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db
 import bcrypt
 from .dashboard_manage import admin_manage
-
+from github import Github
 
 
 admin_bp = Blueprint("admin",__name__,template_folder="templates",static_folder="static")
@@ -25,6 +25,8 @@ class admin_github_tokens(db.Model):
     token_name = db.Column(db.String)
     user_id = db.Column(db.Integer)
     github_token = db.Column(db.String)
+    is_oauth_token = db.Column(db.Boolean)
+    github_user_id = db.Column(db.Integer)
 
 
 class admin_token_orgs(db.Model):
@@ -74,8 +76,12 @@ def admin_dashboard():
             orgs_details.append(curr)
 
     print(orgs_details)
-
-    return render_template("dashboard.html",username=session["admin_username"],orgs_details=orgs_details)
+    
+    response = make_response(render_template("dashboard.html",username=session["admin_username"],orgs_details=orgs_details))
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate" # HTTP 1.1.
+    response.headers["Pragma"] = "no-cache" # HTTP 1.0.
+    response.headers["Expires"] = "0" # Proxies.
+    return response
 
 
 
@@ -141,7 +147,7 @@ def admin_register():
     u.set_password(formdata["password"])
     db.session.add(u)
     db.session.commit()
-    flash("user created please login")
+    flash("user created please login","success")
     return redirect(url_for("admin.admin_login"))
 
 
@@ -151,6 +157,39 @@ def admin_register():
 def admin_add_token():
     if request.method=="GET":
         return render_template("add_token.html",username=session["admin_username"])
+    form_data = request.form.to_dict()
+    if "token_name" not in form_data or form_data["token_name"]==None or form_data["token_name"]=="":
+        flash("Token name is required")
+        return render_template("add_token.html",username=session["admin_username"])
+    if "github_token" not in form_data or form_data["github_token"]==None or form_data["github_token"]=="":
+        flash("Github personal token is required")
+        return render_template("add_token.html",username=session["admin_username"])
+    g = Github(form_data["github_token"])
+    try:
+        user_raw_data = g.get_user().raw_data
+    except:
+        flash("Invalid github token")
+        return render_template("add_token.html",username=session["admin_username"])
+    username = session["admin_username"]
+    user_id = admin_user.query.filter_by(username=username).first().admin_id
+    token_to_insert = admin_github_tokens(user_id=user_id,github_token=form_data["github_token"],
+        is_oauth_token=False,github_user_id=user_raw_data["id"])
+        
+    db.session.add(token_to_insert)
+    db.session.commit()
+    token_to_insert.token_name = form_data["token_name"]
+        
+    db.session.commit()
+    
+    for org in g.get_user().get_orgs():
+            if admin_token_orgs.query.filter_by(org_id=org.id).first()!= None:
+                continue
+            org_to_insert = admin_token_orgs(token_id=token_to_insert.token_id,org_id=org.id,org_name=org.login)
+            db.session.add(org_to_insert)
+            db.session.commit()
+
+
+    return redirect(url_for("admin.admin_dashboard"))
 
 @admin_bp.route("/logout")
 @admin_login_required
