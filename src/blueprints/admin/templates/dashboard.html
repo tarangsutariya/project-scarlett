@@ -91,7 +91,7 @@
       
        
         <h3>User requests</h3>
-        <input id="requestsearch" type="search" placeholder="search user requests">
+        <input id="requestsearch" type="search" onkeyup="request_search()" placeholder="search user requests">
         <table role="grid" id="userrequests">
             <thead>
               <tr>
@@ -103,7 +103,13 @@
               </tr>
             </thead>
             <tbody>
-
+              <tr style="display: None;">
+                <th scope="col"></th>
+                <td scope="col"></td>
+                <td scope="col">Not found</td>
+                <td scope="col"></td>
+                
+              </tr>
               {% if user_reqs|length==0 %}
               <tr><td>No Requests to appprove</td></tr>
               {% else %}
@@ -296,7 +302,7 @@
 
     <!-- Minimal theme switcher -->
     <script src="./static/js/minimal-theme-switcher.js"></script>
-
+    <script src="./static/js/searchbar.js"></script>
   </body>
 
 </html>
