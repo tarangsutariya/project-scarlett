@@ -2,7 +2,7 @@ from flask import request,session,Blueprint,render_template,redirect,url_for
 from github import Github
 from authlib.integrations.flask_client import OAuth
 from models import db,users,user_orgs,user_requests
-from ..admin.admin import admin_github_tokens,admin_user,admin_token_orgs
+from ..admin.models import admin_github_tokens,admin_user,admin_token_orgs
 from config import github_client_id,github_client_secret
 
 
@@ -61,7 +61,7 @@ def authorize():
 
     if "admin_pannel" in session:
         session.pop("admin_pannel")
-        session.pop("user_login")
+        
         username = session["admin_username"]
         user_id = admin_user.query.filter_by(username=username).first().admin_id
         session.clear()

@@ -87,3 +87,7 @@ body > main {
   body > footer {
     padding: 1rem 0;
   }
+
+  .pointerhere:hover{
+    cursor: pointer;
+  }

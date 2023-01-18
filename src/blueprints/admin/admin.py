@@ -1,40 +1,18 @@
 from flask import Blueprint,session,redirect,url_for,render_template,flash,request,make_response
-from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
+
+
 from models import db,user_requests
 import bcrypt
 from .dashboard_manage import admin_manage
 from github import Github
+from .admin_login_manager import admin_login_required
+from .models import admin_github_tokens,admin_token_orgs,admin_user
+
 
 
 admin_bp = Blueprint("admin",__name__,template_folder="templates",static_folder="static")
 admin_bp.register_blueprint(admin_manage,url_prefix="/manage")
-class admin_user(db.Model):
-    admin_id = db.Column(db.Integer,primary_key=True)
-    username = db.Column(db.String)
-    password_hash = db.Column(db.String(128))
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-
-class admin_github_tokens(db.Model):
-    token_id = db.Column(db.Integer,primary_key=True)
-    token_name = db.Column(db.String)
-    user_id = db.Column(db.Integer)
-    github_token = db.Column(db.String)
-    is_oauth_token = db.Column(db.Boolean)
-    github_user_id = db.Column(db.Integer)
-
-
-class admin_token_orgs(db.Model):
-    r_id = db.Column(db.Integer,primary_key=True)
-    token_id = db.Column(db.Integer)
-    org_id = db.Column(db.Integer)
-    org_name = db.Column(db.Integer)
-    
 
      
 
@@ -44,18 +22,7 @@ class admin_token_orgs(db.Model):
 
 
 
-def admin_login_required(f):
-    @wraps(f)
-    def wrap(*args,**kwargs):
-        if "admin_username" in session:
-            
-            return f(*args,**kwargs)
-        else:
-            
-            return redirect(url_for('admin.admin_login'))
-            # return redirect(url_for(admin_dashboard))
 
-    return wrap
 
 @admin_bp.route("/")
 @admin_login_required
