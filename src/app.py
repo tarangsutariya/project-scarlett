@@ -1,3 +1,4 @@
+#gunicorn -w 2 -k gevent app:app
 from flask import Flask
 
 from flask_sqlalchemy import SQLAlchemy

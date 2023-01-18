@@ -13,6 +13,29 @@
 
     <!-- Custom styles for this example -->
     <link rel="stylesheet" href="./static/custom.css"> 
+   <script>
+   async function sub(){
+    let responseText="notapproved"
+    while(responseText=="notapproved"){
+    let response = await fetch("./checkapproved")
+     responseText = await response.text();
+    }
+    let btn = document.getElementById("testbutton")
+    btn.disabled = false
+    btn.innerText="Request processed ,Redirecting..."
+    await new Promise(r => setTimeout(r, 2000));
+    if(responseText=="approved"){
+      window.location.replace("./userapproved")
+    }
+   }
+   sub()
+
+
+   </script>
+
+
+
+
   </head>
 
   <body>
@@ -70,7 +93,7 @@
 
          
             <button id="testbutton" aria-busy="true" disabled onclick="preventDefault()">Please Wait...</button>
-            <button  onclick="preventDefault()" style="background-color: #DC3545; border-color: #DC3545;">Cancel Request</button>
+            <button style="background-color: #DC3545; border-color: #DC3545;">Cancel Request</button>
             {%endif%}
         </form>
        

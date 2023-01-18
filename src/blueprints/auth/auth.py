@@ -88,13 +88,16 @@ def authorize():
         return redirect(url_for("admin.admin_dashboard"))
     elif "user_login" in session:
         session.pop("user_login")
-        if users.query.filter_by(github_user_id=user_raw_data["id"]).first() != None:
-            session["user_userid"] = users.query.filter_by(github_user_id=user_raw_data["id"]).first().user_id
+        usr_curr = users.query.filter_by(github_user_id=user_raw_data["id"]).first()
+        if  usr_curr != None:
+            session["user_userid"] = usr_curr.user_id
             session["user_githubid"]= user_raw_data["id"]
             session["user_githubusername"]=user_raw_data["login"]
             usr_id = session["user_userid"]
+            usr_curr.github_token = token["access_token"]
+            db.session.commit()
             for org in github_client.get_user().get_orgs():
-                if user_orgs.query.filter_by(user_id=usr_id,github_org_id=org.id)!=None:
+                if user_orgs.query.filter_by(user_id=usr_id,github_org_id=org.id)==None:
                     org_to_insert = user_orgs(user_id=usr_id,github_org_id=org.id,github_org_name=org.name)
                     db.session.add(org_to_insert)
                     db.session.commit()

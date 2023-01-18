@@ -1,7 +1,7 @@
-from flask import Blueprint,session,redirect,url_for,render_template,flash,request
-from models import db,user_requests
+from flask import Blueprint,session,redirect,url_for,render_template,flash,request,abort
+from models import db,user_requests,users
 from .login_manager import user_login_required
-
+import time
 users_bp = Blueprint("users",__name__,template_folder="templates",static_folder="static")
 
 
@@ -44,8 +44,33 @@ def user_request_access():
 
     
     
+@users_bp.route("/userapproved")
+def user_approved_login():
+    if "pending_request_id" not in session or "user_githubusername" not in session:
+        return redirect(url_for("users.user_not_approved"))
+    usr = users.query.filter_by(github_username=session["user_githubusername"]).first()
+    if usr==None:
+        return redirect(url_for("users.user_not_approved"))
+    session.pop("pending_request_id")
+    session.pop("user_githubusername")
+    session["user_userid"]=usr.user_id
+    session["user_githubid"]=usr.github_user_id
+    session["user_githubusername"]=usr.github_username
+    return redirect(url_for("users.user_dashboard"))
 
 
+@users_bp.route("/checkapproved")
+def checkapproved():
+    if "pending_request_id" not in session or "user_githubusername" not in session:
+        abort(404)
+    dur = 0
+    while dur < 15 and user_requests.query.filter_by(request_id=session["pending_request_id"]).first()!=None:
+        print(user_requests.query.filter_by(request_id=session["pending_request_id"]).first()==None)
+        time.sleep(2)
+        dur+=2
+    if user_requests.query.filter_by(request_id=session["pending_request_id"]).first()==None:
+        return "approved"
+    return "notapproved"
 
 
 
@@ -58,6 +83,8 @@ def user_not_approved():
     if "pending_request_id" not in session:
         return redirect(url_for("users.user_login"))
     if user_requests.query.filter_by(request_id=session["pending_request_id"]).first()==None:
+        if users.query.filter_by(github_username=session["user_githubusername"]).first()!=None:
+            return redirect(url_for("users.user_approved_login"))
         return render_template("user_notapproved.html",notFound=True,request_id=session["pending_request_id"])
     if request.method=="POST":
         request_to_delete = user_requests.query.filter_by(request_id=session["pending_request_id"]).first()
@@ -69,6 +96,7 @@ def user_not_approved():
     
     return render_template("user_notapproved.html",notFound=False,github_username=session["user_githubusername"],
            request_id=session["pending_request_id"])
+
 
 
 
