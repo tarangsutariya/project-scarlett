@@ -1,7 +1,7 @@
 from flask import Blueprint,session,redirect,url_for,render_template,flash,request,make_response
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db
+from models import db,user_requests
 import bcrypt
 from .dashboard_manage import admin_manage
 from github import Github
@@ -75,9 +75,17 @@ def admin_dashboard():
             curr["token_id"]=token.token_id
             orgs_details.append(curr)
 
-    print(orgs_details)
+    user_reqs = []
+    for req in user_requests.query.filter_by().all():
+        req_details = {}
+        req_details["request_id"]=req.request_id
+        req_details["message"]=req.request_message
+        req_details["github_username"]=req.github_username
+        user_reqs.append(req_details)
+
     
-    response = make_response(render_template("dashboard.html",username=session["admin_username"],orgs_details=orgs_details))
+    response = make_response(render_template("dashboard.html",username=session["admin_username"],orgs_details=orgs_details,
+        user_reqs=user_reqs))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate" # HTTP 1.1.
     response.headers["Pragma"] = "no-cache" # HTTP 1.0.
     response.headers["Expires"] = "0" # Proxies.

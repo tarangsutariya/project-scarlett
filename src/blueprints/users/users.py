@@ -49,7 +49,7 @@ def user_request_access():
 
 
 
-@users_bp.route("/notapproved")
+@users_bp.route("/notapproved",methods=["GET","POST"])
 def user_not_approved():
     if "user_userid" in session:
         return redirect(url_for("users.user_dashboard"))
@@ -59,7 +59,16 @@ def user_not_approved():
         return redirect(url_for("users.user_login"))
     if user_requests.query.filter_by(request_id=session["pending_request_id"]).first()==None:
         return render_template("user_notapproved.html",notFound=True,request_id=session["pending_request_id"])
-    return render_template("user_notapproved.html",notFound=False,github_username=session["user_githubusername"],request_id=session["pending_request_id"])
+    if request.method=="POST":
+        request_to_delete = user_requests.query.filter_by(request_id=session["pending_request_id"]).first()
+        db.session.delete(request_to_delete)
+        db.session.commit()
+        session.pop("pending_request_id")
+        session.pop("user_githubusername")
+        return redirect(url_for("users.user_login"))
+    
+    return render_template("user_notapproved.html",notFound=False,github_username=session["user_githubusername"],
+           request_id=session["pending_request_id"])
 
 
 
@@ -75,14 +84,18 @@ def logoutuser():
         session.pop("approve_request_not_sent")
     if "github_oauth_token" in session:
         session.pop("github_oauth_token")
+    if "pending_request_id" in session:
+        session.pop("pending_request_id")
     return redirect(url_for("users.user_dashboard"))
 
 @users_bp.route("/githuboauthlogin")
 def user_githuboauthlogin():
     if "user_userid" in session:
         return redirect(url_for("users.user_dashboard"))
-    elif "not_approved" in session:
+    elif "pending_request_id" in session:
         return redirect(url_for("users.user_not_approved"))
     session["user_login"] =True
     return redirect(url_for("auth.auth_root"))
+
+
 

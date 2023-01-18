@@ -16,7 +16,7 @@
  
     <!-- Custom styles for this example -->
     <link rel="stylesheet" href="./static/custom.css"> 
-
+    <link rel="stylesheet" href="./static/searchbar.css"> 
     <!--js-->
     <script src="static/js/modal.js">
    
@@ -40,6 +40,10 @@
 
         
       }
+    
+
+
+
     </script>
 
   </head>
@@ -85,8 +89,10 @@
     
     <main class="container">
       
-        <p>User Requests</p>
-        <table role="grid">
+       
+        <h3>User requests</h3>
+        <input id="requestsearch" type="search" placeholder="search user requests">
+        <table role="grid" id="userrequests">
             <thead>
               <tr>
                 <th scope="col">#</th>
@@ -97,10 +103,16 @@
               </tr>
             </thead>
             <tbody>
+
+              {% if user_reqs|length==0 %}
+              <tr><td>No Requests to appprove</td></tr>
+              {% else %}
+
+              {%for req in user_reqs%}
               <tr>
-                <th scope="row">1</th>
-                <td>Cell</td>
-                <td>Cell</td>
+                <th scope="row">{{req["request_id"]}}</th>
+                <td>{{req["github_username"]}}</td>
+                <td>{{req["message"]}}</td>
                 <td>
                     <a href="#">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg>
@@ -133,20 +145,9 @@
 
 
               </tr>
-              <tr>
-                <th scope="row">1</th>
-                <td>Cell</td>
-                <td>Cell</td>
-                <td>Cell</td>
-               
-              </tr>
-              <tr>
-                <th scope="row">1</th>
-                <td>Cell</td>
-                <td>Cell</td>
-                <td>Cell</td>
-               
-              </tr>
+              {%endfor%}
+              {% endif %}
+          
             </tbody>
             <tfoot>
               <tr>

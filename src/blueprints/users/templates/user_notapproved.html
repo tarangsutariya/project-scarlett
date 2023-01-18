@@ -52,7 +52,7 @@
             <label> Request id : #{{request_id}}</label>
           {% if notFound%}
           <p>Request not found this means either request is invalid or denyed try logging again</p>
-           <a href="./login" role="button">Go to login</a>
+           <a href="./logout" role="button">Try logging in or requesting access again</a>
            {% else %}
             {% with messages = get_flashed_messages() %}  
             {% if messages %}  
@@ -70,6 +70,7 @@
 
          
             <button id="testbutton" aria-busy="true" disabled onclick="preventDefault()">Please Wait...</button>
+            <button  onclick="preventDefault()" style="background-color: #DC3545; border-color: #DC3545;">Cancel Request</button>
             {%endif%}
         </form>
        
