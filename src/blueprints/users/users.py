@@ -9,7 +9,7 @@ users_bp = Blueprint("users",__name__,template_folder="templates",static_folder=
 @users_bp.route("/")
 @user_login_required
 def user_dashboard():
-    return str(session["user_userid"])
+    return render_template("user_dashboard.html")
 
 @users_bp.route("/login")
 def user_login():

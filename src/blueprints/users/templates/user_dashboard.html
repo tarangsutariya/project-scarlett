@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard</title>
+    <meta name="description" content="login to admin pannel.">
+   
+
+    <!-- Pico.css -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+
+    <!-- Custom styles for this example -->
+    <link rel="stylesheet" href="./static/custom.css"> 
+
+
+<style>
+
+.pull {
+    float: left;
+}
+
+.push {
+    float: right;
+}
+.card {
+    border: 1px solid;
+}
+
+.card__wrap--inner {
+            padding: 12px;
+        }
+
+.card__item {
+        padding: 12px 18px 12px 18px;
+    }
+
+.card__sub {
+        padding: 0 18px;
+    }
+
+.card__footer {
+        padding: 18px;
+        overflow: hidden;
+        border-top: 1px solid;
+    }
+
+/*Card Flex Code*/
+
+.card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 8px;
+}
+
+.card__wrap--outer {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+.card__wrap--inner {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+
+@media (min-width: 480px) {
+
+.card__wrap--inner { 
+								width: 50%
+        }
+						}
+
+@media (min-width: 1024px) {
+
+.card__wrap--inner { 
+								width: 33.33%
+        }
+						}
+
+.flexible {
+    flex-grow: 1;
+}
+</style>
+
+  </head>
+
+  <body>
+
+    <!-- Nav -->
+    <nav class="container-fluid">
+      <ul>
+        <li><a href="./" class="contrast" ><strong>Project Scarlett</strong></a></li>
+    
+      </ul>
+      <ul>
+        <li>
+          <details role="list" dir="rtl">
+            <summary aria-haspopup="listbox" role="link" class="secondary">Theme</summary>
+            <ul role="listbox">
+              <li><a href="#" data-theme-switcher="auto">Auto</a></li>
+              <li><a href="#" data-theme-switcher="light">Light</a></li>
+              <li><a href="#" data-theme-switcher="dark">Dark</a></li>
+            </ul>
+         
+          </details>
+        </li>
+      
+        <li>
+            <details role="list" dir="rtl">
+              <summary aria-haspopup="listbox" role="link" class="secondary">{{username}}</summary>
+              <ul role="listbox">
+               
+                <li><a href="./settings">Settings</a></li>
+                <li><a href="./logout">Log Out</a></li>
+                
+              </ul>
+            </details>
+          </li>
+
+      </ul>
+    </nav><!-- ./ Nav -->
+
+    <!-- Main -->
+    
+    <main class="container">
+      <div class="card__wrap--outer">
+         <div class="card__wrap--inner">
+            <div class="card">
+
+              <div style="max-height: 60px; text-overflow: clip;overflow: hidden;word-wrap: break-word;">
+							<a href="#"><h6>tarangsutariya/project-scarlett-3000</h6></a></div>
+              <p><span style="
+                display:inline-block;
+                white-space: nowrap;
+           
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 13ch;"><svg width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><title>ionicons-v5-d</title><path d="M416,160a64,64,0,1,0-96.27,55.24c-2.29,29.08-20.08,37-75,48.42-17.76,3.68-35.93,7.45-52.71,13.93V151.39a64,64,0,1,0-64,0V360.61a64,64,0,1,0,64.42.24c2.39-18,16-24.33,65.26-34.52,27.43-5.67,55.78-11.54,79.78-26.95,29-18.58,44.53-46.78,46.36-83.89A64,64,0,0,0,416,160ZM160,64a32,32,0,1,1-32,32A32,32,0,0,1,160,64Zm0,384a32,32,0,1,1,32-32A32,32,0,0,1,160,448ZM352,192a32,32,0,1,1,32-32A32,32,0,0,1,352,192Z"/></svg>
+                 master
+                </span>
+                <span style="position: relative;float: right; margin-top: -2px;">ams1</span>
+              </p>
+           <span><div style="max-width: 80%;max-height: 30px; overflow: hidden;text-overflow: clip;white-space: nowrap; ">
+            <a id="sd" style="font-size: smaller;" href="#">master.project-scarlett.tarang.uk</a>  
+          </div>
+
+           <svg style="position: relative; float: right; margin-top: -21px; margin-bottom: 3px;" height="19" width="19" version="1.1" id="Filled_Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+	 y="0px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
+<g id="Status-Approved-Filled">
+	<path d="M12,0C5.4,0,0,5.4,0,12s5.4,12,12,12s12-5.4,12-12S18.6,0,12,0z M9.5,18.3l-5.6-5.7l1.8-1.8l3.9,3.9l8.4-8.4l1.8,1.8
+		L9.5,18.3z"/>
+</g>
+</svg></span>
+            </div>
+        </div>
+        <div class="card__wrap--inner">
+          <div class="card">
+
+            <div style="max-height: 60px; text-overflow: clip;overflow: hidden;word-wrap: break-word;">
+            <a href="#"><h6>tarangsutariya/project-scarlett-3000</h6></a></div>
+            <p><span style="
+              display:inline-block;
+              white-space: nowrap;
+         
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 13ch;"><svg width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><title>ionicons-v5-d</title><path d="M416,160a64,64,0,1,0-96.27,55.24c-2.29,29.08-20.08,37-75,48.42-17.76,3.68-35.93,7.45-52.71,13.93V151.39a64,64,0,1,0-64,0V360.61a64,64,0,1,0,64.42.24c2.39-18,16-24.33,65.26-34.52,27.43-5.67,55.78-11.54,79.78-26.95,29-18.58,44.53-46.78,46.36-83.89A64,64,0,0,0,416,160ZM160,64a32,32,0,1,1-32,32A32,32,0,0,1,160,64Zm0,384a32,32,0,1,1,32-32A32,32,0,0,1,160,448ZM352,192a32,32,0,1,1,32-32A32,32,0,0,1,352,192Z"/></svg>
+               master
+              </span>
+              <span style="position: relative;float: right; margin-top: -2px;">ams1</span>
+            </p>
+         <span><div style="max-width: 80%;max-height: 30px; overflow: hidden;text-overflow: clip;white-space: nowrap; ">
+          <a id="sd" style="font-size: smaller;" href="#">master.project-scarlett.tarang.uk</a>  
+        </div>
+
+         <svg style="position: relative; float: right; margin-top: -21px; margin-bottom: 3px;" height="19" width="19" version="1.1" id="Filled_Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+ y="0px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
+<g id="Status-Approved-Filled">
+<path d="M12,0C5.4,0,0,5.4,0,12s5.4,12,12,12s12-5.4,12-12S18.6,0,12,0z M9.5,18.3l-5.6-5.7l1.8-1.8l3.9,3.9l8.4-8.4l1.8,1.8
+  L9.5,18.3z"/>
+</g>
+</svg></span>
+          </div>
+      </div>
+			 <div class="card__wrap--inner">
+            <div class="card">
+				
+            </div>
+        </div>
+        <div class="card__wrap--inner">
+          <div class="card">
+      
+          </div>
+      </div>
+      <div class="card__wrap--inner">
+        <div class="card">
+    
+        </div>
+    </div>
+    </div>
+
+
+
+    </main><!-- ./ Main -->
+
+
+
+
+    <!-- Footer -->
+    <!-- <footer class="container-fluid">
+     Project-Scarlett
+    </footer> -->
+    <!-- ./ Footer -->
+
+
+
+    <!-- Minimal theme switcher -->
+    <script src="./static/js/minimal-theme-switcher.js"></script>
+
+  </body>
+
+</html>

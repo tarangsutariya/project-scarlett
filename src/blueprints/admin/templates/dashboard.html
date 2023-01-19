@@ -40,7 +40,48 @@
 
         
       }
+    let token_to_edit = null;
+     function set_to_edit_token(token_id,token_name){
+              token_to_edit=token_id;
+              document.getElementById("token_name_input").value=token_name;
+     }
+
+     function edit_token_confirm(element){
+      let tkn_name =  document.getElementById("token_name_input")
+      let tkn_tkn = document.getElementById("token_token")
+      let error_span = document.getElementById("token_edit_error")
+      if(tkn_name.value==""){
+        error_span.innerText = "Token name cant be empty"
+      }else{
+          
+          toggleModal(element)
+      }
+
+     }
+
+     let todelete_token = null;
+
+function set_todelete_token(tokenid,delete_token_name){
+ todelete_token = tokenid;
+ document.getElementById("deletetoken").innerText=delete_token_name;
+}
+
+ async function deletetoken(){
+   if(todelete_token==null){
+     return;
+   }
+   document.getElementById("loader").style.display="flex";
+   await fetch('./manage/token/delete/'+todelete_token);
+   location.reload()
    
+
+   
+ }
+
+
+
+
+
       async function acceptuserrequest(element,request_id){
         
         await fetch('./manage/userrequest/accept/'+request_id);
@@ -240,14 +281,14 @@
         <td>{{tkn.token_name}}</td>
         <td>{{tkn.token_status}}</td>
         <td>
-          <a data-target="modal-edit-token" onclick="toggleModal(event)">
+          <a data-target="modal-edit-token" onclick="set_to_edit_token({{tkn.token_id}},'{{tkn.token_name}}');toggleModal(event)">
             <svg width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
               <path d="M18 9.99982L14 5.99982M2.5 21.4998L5.88437 21.1238C6.29786 21.0778 6.5046 21.0549 6.69785 20.9923C6.86929 20.9368 7.03245 20.8584 7.18289 20.7592C7.35245 20.6474 7.49955 20.5003 7.79373 20.2061L21 6.99982C22.1046 5.89525 22.1046 4.10438 21 2.99981C19.8955 1.89525 18.1046 1.89524 17 2.99981L3.79373 16.2061C3.49955 16.5003 3.35246 16.6474 3.24064 16.8169C3.14143 16.9674 3.06301 17.1305 3.00751 17.302C2.94496 17.4952 2.92198 17.702 2.87604 18.1155L2.5 21.4998Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             </a>
 
-            <a data-target="modal-delete-org"
-            onClick="set_todelete_org({{tkn.token_id}},'{{tkn.token_name}}');
+            <a data-target="modal-delete-token"
+            onClick="set_todelete_token({{tkn.token_id}},'{{tkn.token_name}}');
             toggleModal(event)">
             <svg
             width="24"
@@ -431,9 +472,11 @@
     </a>
     <h3>Edit token</h3>
     <label>Token name : </label>
-    <input>
+    <input id="token_name_input">
     <label>Updated token : </label>
-    <input>
+    <input id="token_token">
+    <span>Paste new token here,oauth tokens can't be update try deleting and re-adding instead</span><br/>
+    <span id="token_edit_error" style="color: red;"></span>
     <footer>
       <a href="#cancel"
         role="button"
@@ -445,16 +488,44 @@
       <a href="#confirm"
         role="button"
         data-target="modal-edit-token"
-        onClick="deleteorg(todelete_org);toggleModal(event)">
+        onClick="edit_token_confirm(event)">
        Save
       </a>
     </footer>
   </article>
   </dialog>
 
+<!--Token delete -->
 
-
-
+<dialog id="modal-delete-token">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-delete-token"
+      onClick="toggleModal(event)">
+    </a>
+    <h3>Are you sure</h3>
+    <p>
+    Do you really want to delete token  <span id="deletetoken" style="font-weight: bold;"></span>?  
+    </p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-delete-token"
+        onClick="toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button" style="background-color: red;"
+        data-target="modal-delete-token"
+        onClick="deletetoken();toggleModal(event)">
+        Delete
+      </a>
+    </footer>
+  </article>
+  </dialog>
 
 
 
