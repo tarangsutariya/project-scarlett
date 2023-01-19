@@ -17,6 +17,7 @@ class admin_github_tokens(db.Model):
     token_name = db.Column(db.String)
     user_id = db.Column(db.Integer)
     github_token = db.Column(db.String)
+    token_status = db.Column(db.String,default="working")
     is_oauth_token = db.Column(db.Boolean)
     github_user_id = db.Column(db.Integer)
 

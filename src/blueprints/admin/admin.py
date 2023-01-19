@@ -50,9 +50,16 @@ def admin_dashboard():
         req_details["github_username"]=req.github_username
         user_reqs.append(req_details)
 
-    
+    tokns = []
+    for tkn in admin_github_tokens.query.filter_by().all():
+        tkn_details = {}
+        tkn_details["token_id"]=tkn.token_id
+        tkn_details["token_name"]=tkn.token_name
+        tkn_details["token_status"]=tkn.token_status
+        tokns.append(tkn_details)
+
     response = make_response(render_template("dashboard.html",username=session["admin_username"],orgs_details=orgs_details,
-        user_reqs=user_reqs))
+        user_reqs=user_reqs,tokns=tokns))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate" # HTTP 1.1.
     response.headers["Pragma"] = "no-cache" # HTTP 1.0.
     response.headers["Expires"] = "0" # Proxies.

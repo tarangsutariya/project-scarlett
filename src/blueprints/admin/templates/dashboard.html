@@ -194,10 +194,111 @@
 
 
 
+
+<!--Tokens table -->
+<h3>Github tokens</h3>
+
+<input id="tokensearch" type="search" onkeyup="search_token()" placeholder="search user requests">
+<table role="grid" id="tokenstab">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Token name</th>
+        <th scope="col">status  <a> <svg  height="20" width="20" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 489.645 489.645" xml:space="preserve">
+          <g>
+            <g>
+              <path d="M468.999,227.774c-11.4,0-20.8,8.3-20.8,19.8c-1,74.9-44.2,142.6-110.3,178.9c-99.6,54.7-216,5.6-260.6-61l62.9,13.1
+                c10.4,2.1,21.8-4.2,23.9-15.6c2.1-10.4-4.2-21.8-15.6-23.9l-123.7-26c-7.2-1.7-26.1,3.5-23.9,22.9l15.6,124.8
+                c1,10.4,9.4,17.7,19.8,17.7c15.5,0,21.8-11.4,20.8-22.9l-7.3-60.9c101.1,121.3,229.4,104.4,306.8,69.3
+                c80.1-42.7,131.1-124.8,132.1-215.4C488.799,237.174,480.399,227.774,468.999,227.774z"/>
+              <path d="M20.599,261.874c11.4,0,20.8-8.3,20.8-19.8c1-74.9,44.2-142.6,110.3-178.9c99.6-54.7,216-5.6,260.6,61l-62.9-13.1
+                c-10.4-2.1-21.8,4.2-23.9,15.6c-2.1,10.4,4.2,21.8,15.6,23.9l123.8,26c7.2,1.7,26.1-3.5,23.9-22.9l-15.6-124.8
+                c-1-10.4-9.4-17.7-19.8-17.7c-15.5,0-21.8,11.4-20.8,22.9l7.2,60.9c-101.1-121.2-229.4-104.4-306.8-69.2
+                c-80.1,42.6-131.1,124.8-132.2,215.3C0.799,252.574,9.199,261.874,20.599,261.874z"/>
+            </g>
+          </g></svg></a></th>
+        <th scope="col"> Manage</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+
+
+      <tr style="display: None;">
+        <th scope="col"></th>
+        <td scope="col"></td>
+        <td scope="col">Not found</td>
+        <td scope="col"></td>
+        
+      </tr>
+    {% if tokns|length==0 %}
+    <tr><td>No Tokens Seriously? </td></tr>
+    {% else %}
+    {% for tkn in tokns %}
+      <tr>
+        <th scope="row">{{ loop.index0+1 }}</th>
+        <td>{{tkn.token_name}}</td>
+        <td>{{tkn.token_status}}</td>
+        <td>
+          <a data-target="modal-edit-token" onclick="toggleModal(event)">
+            <svg width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 9.99982L14 5.99982M2.5 21.4998L5.88437 21.1238C6.29786 21.0778 6.5046 21.0549 6.69785 20.9923C6.86929 20.9368 7.03245 20.8584 7.18289 20.7592C7.35245 20.6474 7.49955 20.5003 7.79373 20.2061L21 6.99982C22.1046 5.89525 22.1046 4.10438 21 2.99981C19.8955 1.89525 18.1046 1.89524 17 2.99981L3.79373 16.2061C3.49955 16.5003 3.35246 16.6474 3.24064 16.8169C3.14143 16.9674 3.06301 17.1305 3.00751 17.302C2.94496 17.4952 2.92198 17.702 2.87604 18.1155L2.5 21.4998Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            </a>
+
+            <a data-target="modal-delete-org"
+            onClick="set_todelete_org({{tkn.token_id}},'{{tkn.token_name}}');
+            toggleModal(event)">
+            <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
+              fill="currentColor"
+            />
+            <path d="M9 9H11V17H9V9Z" fill="currentColor" />
+            <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+          </svg>
+        
+        </a>
+      
+        
+        </td>
+       
+
+
+      </tr>
+      {% endfor%}
+     {% endif %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="col"></th>
+        <td scope="col"></td>
+        <td scope="col"></td>
+        <td scope="col"><a href="./addtoken">Add</a></td>
+        
+      </tr>
+    </tfoot>
+  </table>
+
+
+
+
 <!--orgs table-->
 
-<p>Allowed github Orginization</p>
-<table role="grid">
+
+
+<h3>Allowed github Orginization</h3>
+
+<input id="orgsearch" type="search" onkeyup="search_org()" placeholder="search organizations">
+<table role="grid" id="approvedorgs">
     <thead>
       <tr>
         <th scope="col">#</th>
@@ -208,6 +309,15 @@
       </tr>
     </thead>
     <tbody>
+
+
+      <tr style="display: None;">
+        <th scope="col"></th>
+        <td scope="col"></td>
+        <td scope="col">Not found</td>
+        <td scope="col"></td>
+        
+      </tr>
     {% if orgs_details|length==0 %}
     <tr><td>No Orginization availabe</td></tr>
     {% else %}
@@ -309,7 +419,38 @@
 
 
 
-
+<!-- Edit token Modal -->
+<!-- Modal -->
+<dialog id="modal-edit-token">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-edit-token"
+      onClick="toggleModal(event)">
+    </a>
+    <h3>Edit token</h3>
+    <label>Token name : </label>
+    <input>
+    <label>Updated token : </label>
+    <input>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-edit-token"
+        onClick="toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-edit-token"
+        onClick="deleteorg(todelete_org);toggleModal(event)">
+       Save
+      </a>
+    </footer>
+  </article>
+  </dialog>
 
 
 
