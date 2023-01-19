@@ -4,7 +4,10 @@ from .login_manager import user_login_required
 import time
 users_bp = Blueprint("users",__name__,template_folder="templates",static_folder="static")
 
-
+######DANGER DELETE THIS##
+@users_bp.route("/grid")
+def user_grid():
+    return render_template("testgrid.html")
 
 @users_bp.route("/")
 @user_login_required

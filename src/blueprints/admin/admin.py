@@ -187,8 +187,8 @@ def admin_github_oauth():
     session["admin_pannel"] = True
     return redirect(url_for("auth.auth_root"))
 
-
-@admin_bp.route("/as")
-@admin_login_required
-def modaltest():
-    return render_template("modaltest.html")
+##DANGER DELETE THIS
+# @admin_bp.route("/as")
+# @admin_login_required
+# def modaltest():
+#     return render_template("modaltest.html")
