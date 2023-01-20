@@ -8,6 +8,8 @@
     <meta name="description" content="login to admin pannel.">
    
 
+
+
     <!-- Pico.css -->
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
 
@@ -15,10 +17,20 @@
     <link rel="stylesheet" href="./static/custom.css"> 
 
 
+<script>
+async function printwidth(){
+  while(true){
+    await new Promise(r => setTimeout(r, 500));
+    document.getElementById("he").innerText=window.innerWidth
 
+  }
+}
+printwidth()
+</script>
     
 
 <style>
+  @media(min-width : 640px){
 .uul {
   list-style-type: none;
   position: fixed;
@@ -30,7 +42,14 @@
   overflow: auto;
 }
 
-/* .uul{
+#contentblock{
+  margin-left:25%;
+  padding:1px 16px;
+  height:1000px;
+}
+  }
+@media(max-width : 640px) { 
+.uul{
     float: left;
   display: block;
   color: #f2f2f2;
@@ -43,8 +62,16 @@
 .lii{
     display: inline;
     margin: 2px;
-} */
+}
 
+#contentblock{
+ 
+  padding:1px 16px;
+  height:1000px;
+}
+
+
+ }
 </style>
 
   </head>
@@ -100,20 +127,12 @@
             <li class="lii"><a href="#about">About</a></li>
           </ul>
           
-          <div style="margin-left:25%;padding:1px 16px;height:1000px;">
+          <div id="contentblock">
 
             <!-- <div style="padding:1px 16px;height:1000px;"> -->
-            <h2>Fixed Full-height Side Nav</h2>
-            <h3>Try to scroll this area, and see how the sidenav sticks to the page</h3>
-            <p>Notice that this div element has a left margin of 25%. This is because the side navigation is set to 25% width. If you remove the margin, the sidenav will overlay/sit on top of this div.</p>
-            <p>Also notice that we have set overflow:auto to sidenav. This will add a scrollbar when the sidenav is too long (for example if it has over 50 links inside of it).</p>
-            <p>Some text..</p>
-            <p>Some text..</p>
-            <p>Some text..</p>
-            <p>Some text..</p>
-            <p>Some text..</p>
-            <p>Some text..</p>
-            <p>Some text..</p>
+            <h2 id="he">Fixed Full-height Side Nav</h2>
+         <label>Username</label>
+         <input type="text">
           </div>
 
     </main><!-- ./ Main -->
