@@ -187,14 +187,21 @@ def admin_github_oauth():
     session["admin_pannel"] = True
     return redirect(url_for("auth.auth_root"))
 
+x = None
 
+@admin_bp.route("/p")
+def prog():
+    from tasks.tasks import celery
+    print(celery.AsyncResult(x).info)
+    return "H"
 
 @admin_bp.route("/r")
 def testing():
     from tasks.tasks import smm
     from .tasks import sub
+    global x
     sub.delay(10,20)
-    smm.delay(10,20)
+    x=smm.delay(10,20).id
     return "HELLO"
 
 

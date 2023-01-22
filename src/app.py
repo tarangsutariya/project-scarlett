@@ -1,4 +1,4 @@
-#gunicorn -w 2 -k gevent app:app
+#gunicorn -w 2 -k gevent "app:create_app()"
 from flask import Flask
 
 from flask_sqlalchemy import SQLAlchemy
@@ -28,7 +28,7 @@ CELERY_TASK_LIST = [
 def make_celery(app=None):
     app = app or create_app()
 
-    celery = Celery(app.import_name, broker=redis_uri,
+    celery = Celery(app.import_name, broker=redis_uri,backend=redis_uri,
                     include=CELERY_TASK_LIST)
     celery.conf.update(app.config)
     TaskBase = celery.Task
@@ -44,13 +44,15 @@ def make_celery(app=None):
     return celery
 
 
-def create_app(settings_override=None):
+def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = postgres_uri
     app.secret_key=secret_key
     app.config["SQLALCHEMY_ECHO"]=True
     db.init_app(app)
     oauth.init_app(app)
+
+
     app.register_blueprint(admin_bp,url_prefix="/admin")
 
     app.register_blueprint(auth_bp)
