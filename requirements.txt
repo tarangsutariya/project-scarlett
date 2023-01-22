@@ -3,3 +3,4 @@ gunicorn
 Flask-SQLAlchemy
 authlib
 PyGithub
+celery

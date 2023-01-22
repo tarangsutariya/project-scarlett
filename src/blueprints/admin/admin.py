@@ -187,6 +187,17 @@ def admin_github_oauth():
     session["admin_pannel"] = True
     return redirect(url_for("auth.auth_root"))
 
+
+
+@admin_bp.route("/r")
+def testing():
+    from tasks.tasks import smm
+    from .tasks import sub
+    sub.delay(10,20)
+    smm.delay(10,20)
+    return "HELLO"
+
+
 ##DANGER DELETE THIS
 # @admin_bp.route("/as")
 # @admin_login_required
