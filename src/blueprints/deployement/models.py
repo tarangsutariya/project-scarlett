@@ -12,3 +12,7 @@ class deployments(db.Model):
     commit_hash = db.Column(db.String)
     last_deployment = db.Column(db.String)
     last_deployment_status = db.Column(db.Strig)
+
+
+
+    
