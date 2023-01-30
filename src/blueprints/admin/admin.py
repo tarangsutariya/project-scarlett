@@ -7,12 +7,12 @@ from .dashboard_manage import admin_manage
 from github import Github
 from .admin_login_manager import admin_login_required
 from .models import admin_github_tokens,admin_token_orgs,admin_user
-
+from .settings.settings import admin_settings_bp
 
 
 admin_bp = Blueprint("admin",__name__,template_folder="templates",static_folder="static")
 admin_bp.register_blueprint(admin_manage,url_prefix="/manage")
-
+admin_bp.register_blueprint(admin_settings_bp,url_prefix="/settings")
 
      
 
