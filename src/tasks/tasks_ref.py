@@ -1,3 +1,7 @@
+# from src folder 
+# celery -A tasks.tasks_ref worker
+
+
 from app import make_celery
 from celery import current_task
 celery = make_celery()

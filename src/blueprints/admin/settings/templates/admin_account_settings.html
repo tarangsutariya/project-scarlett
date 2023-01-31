@@ -64,7 +64,14 @@
 
  }
 </style>
-
+<style>
+  .message{
+     color:red;
+  }
+  .success{
+    color:lightgreen;
+  }
+</style>
   </head>
 
   <body>
@@ -107,8 +114,8 @@
     
     <main class="container">
         <ul class="uul">
-            <li class="lii"><a href="./account">Account</a></li>
-            <li class="lii"><a href="./servers" class="secondary">Servers</a></li>
+            <li class="lii"><a href="./account"  class="secondary">Account</a></li>
+            <li class="lii"><a href="./servers">Servers</a></li>
             <li class="lii"><a href="./users">Users</a></li>
             <li class="lii"><a href="./deployments">Deployments</a></li>
             <li class="lii"><a href="./notifications">Notifications</a></li>
@@ -118,58 +125,31 @@
           <div id="contentblock">
 
             <!-- <div style="padding:1px 16px;height:1000px;"> -->
-            <h2 id="he">Servers</h2>
-            <input id="requestsearch"  onkeyup="request_search()" placeholder="search..">
-            <table role="grid">
-              <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">IP</th>
-                  <th scope="col">Prefix</th>
-                  <th scope="col">Health</th>
-                 
-                  <th scope="col">Manage</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>192.168.0.1</td>
-                  <td>de</td>
-                  
-                  <td style="color: #50C878;">Healthy</td>
-                  <td>Cell</td>
-                </tr>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Cell</td>
-                  <td>Cell</td>
-                  <td style="color: orange;">Overloaded</td>
-                  <td>Cell</td>
-                  
-                </tr>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Cell</td>
-                  <td>Cell</td>
-                 
-                  <td style="color: #FF2400;">Offline</td>
-                  <td><a>more</a></td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th scope="col">#</th>
-                  <td scope="col"></td>
-                  <td scope="col"></td>
-                 
-                  <td scope="col"></td>
-                  <td scope="col"><a>Add</a></td>
-                </tr>
-              </tfoot>
-            </table>
+            <h2 id="he">Change Account password</h2>
+          <form method="post">
+            <label>Current password</label>
+            <input name="currentpassword" type="password">
+        
+            <label>New password</label>
+            <input name="newpassword" type="password">
+        
+            <label>Confirm password</label>
+            <input name="confirmpassword" type="password">
+        
+            {% with messages = get_flashed_messages(with_categories=true) %}  
+            {% if messages %}  
+                  {% for category,message in messages %}  
+                       <p class="{{ category }}">{{ message }}</p>  
+                  {% endfor %}  
 
+            {% endif %}  
+           
+         
             
+         {% endwith %}  
+
+            <button>Change Password</button>
+          </form>
             
         
           </div>
