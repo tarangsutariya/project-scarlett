@@ -22,7 +22,8 @@ from authlib.integrations.flask_client import OAuth
 CELERY_TASK_LIST = [
     # 'tasks.tasks',
     # 'blueprints.admin.tasks'
-    'tasks.periodic_tasks'
+    'tasks.periodic_tasks',
+    'tasks.remote_tasks'
 
    
 ]
