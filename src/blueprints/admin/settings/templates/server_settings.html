@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard</title>
+    <title>Server Settings</title>
     <meta name="description" content="login to admin pannel.">
    
 
@@ -14,11 +14,49 @@
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
 
     <!-- Custom styles for this example -->
-    <link rel="stylesheet" href="./static/custom.css"> 
 
 
 
-    
+    <script src="../static/js/modal.js">
+   
+    </script>
+
+<script>
+
+async function add_server(element){
+  document.getElementById("server_add_error").innerText=""
+  ip = document.getElementById("server_ip").value
+  domain_prefix = document.getElementById("domain_prefix").value
+
+  if (!(/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip))) {  
+    document.getElementById("server_add_error").innerText="Invalid ip address"
+    return  
+  }  
+  if(domain_prefix==null || domain_prefix==""){
+    document.getElementById("server_add_error").innerText="Domain prefix cant be empty"
+    return
+  }
+   let res = await fetch('./addserver', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({"ip": ip, "prefix": domain_prefix})
+  });
+   let restext = await res.text()
+   if(restext!="OK"){
+    document.getElementById("server_add_error").innerText=restext
+    return
+   }
+
+  
+   location.reload()
+} 
+
+</script>
+
+
 
 <style>
   @media(min-width : 640px){
@@ -62,7 +100,20 @@
 }
 
 
+
  }
+
+.offline{
+  color: #FF2400;
+}
+
+.overloaded{
+  color: orange;
+}
+.healthy{
+  color: #50C878;
+}
+
 </style>
 
   </head>
@@ -132,20 +183,27 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>192.168.0.1</td>
-                  <td>de</td>
+                {% if servers_list|length==0 %}
+                <tr><td></td><td></td><td>No Servers Seriously ?</td><td></td><td></td></tr>
+                {% else %}
+              {% for svr in servers_list %}
+               <tr>
+
+                  <th scope="row">{{loop.index0+1}}</th>
+                  <td>{{ svr.ip_address }}</td>
+                  <td> {{ svr.domain_prefix }} </td>
                   
-                  <td style="color: #50C878;">Healthy</td>
-                  <td>Cell</td>
+                 <td class="{{svr.server_health}}" > {{ svr.server_health}} </td>
+                  <td><a href="server/{{svr.server_id}}">more</a></td>
                 </tr>
-                <tr>
+              {% endfor %}
+                {%endif%}
+            <!--      <tr>
                   <th scope="row">1</th>
                   <td>Cell</td>
                   <td>Cell</td>
                   <td style="color: orange;">Overloaded</td>
-                  <td>Cell</td>
+                   <td style="color: #50C878;">Healthy</td>
                   
                 </tr>
                 <tr>
@@ -156,7 +214,7 @@
                   <td style="color: #FF2400;">Offline</td>
                   <td><a>more</a></td>
                 </tr>
-              </tbody>
+              </tbody> -->
               <tfoot>
                 <tr>
                   <th scope="col">#</th>
@@ -164,7 +222,7 @@
                   <td scope="col"></td>
                  
                   <td scope="col"></td>
-                  <td scope="col"><a>Add</a></td>
+                  <td scope="col" style="cursor : pointer;" data-target="modal-add-server" onclick="document.getElementById('server_add_error').innerText='';toggleModal(event)"><a>Add</a></td>
                 </tr>
               </tfoot>
             </table>
@@ -185,6 +243,41 @@
     </footer> -->
     <!-- ./ Footer -->
 
+
+    <dialog id="modal-add-server">
+      <article>
+        <a href="#close"
+          aria-label="Close"
+          class="close"
+          data-target="modal-add-server"
+          onClick="toggleModal(event)">
+        </a>
+        <h3>Add Server</h3>
+        <label>IP : </label>
+        <input id="server_ip">
+        <label>Domain prefix : </label>
+        <input id="domain_prefix">
+        <span></span><br/>
+        <span id="server_add_error" style="color: red;"></span>
+        <footer>
+          <a href="#cancel"
+            role="button"
+            class="secondary"
+            data-target="modal-add-server"
+            onClick="toggleModal(event)">
+            Cancel
+          </a>
+          <a href="#confirm"
+            role="button"
+            data-target="modal-add-server"
+            onClick="add_server(event)">
+           Add
+          </a>
+        </footer>
+      </article>
+      </dialog>
+
+    
 
 
     <!-- Minimal theme switcher -->

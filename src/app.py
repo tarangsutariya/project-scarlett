@@ -6,6 +6,7 @@ from blueprints.users.users import users_bp
 from blueprints.admin.admin import admin_bp
 from blueprints.auth.auth import auth_bp
 from celery import Celery
+from celery.schedules import crontab
 from config import secret_key,postgres_uri,redis_uri
 
 
@@ -19,14 +20,23 @@ from authlib.integrations.flask_client import OAuth
 
 
 CELERY_TASK_LIST = [
-    'tasks.tasks',
-    'blueprints.admin.tasks'
+    # 'tasks.tasks',
+    # 'blueprints.admin.tasks'
+    'tasks.periodic_tasks'
+
    
 ]
 
 
 def make_celery(app=None):
     app = app or create_app()
+    # app.config['CELERYBEAT_SCHEDULE'] = {
+    #     # Executes every minute
+    #     'periodic_task-every-minute': {
+    #         'task': 'everyminute',
+    #         'schedule': crontab(minute="*")
+    #     }
+    # }
 
     celery = Celery(app.import_name, broker=redis_uri,backend=redis_uri,
                     include=CELERY_TASK_LIST)
