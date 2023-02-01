@@ -5,3 +5,4 @@ authlib
 PyGithub
 celery
 cloudflare
+psutil

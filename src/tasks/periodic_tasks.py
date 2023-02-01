@@ -10,8 +10,8 @@
 from app import make_celery
 from celery.utils.log import get_task_logger
 from blueprints.admin.models import admin_servers
-from .remote_tasks import tasktestq
-
+from .remote_tasks import reportstats
+from models import db
 logger = get_task_logger(__name__)
 
 celery = make_celery()
@@ -20,11 +20,32 @@ celery = make_celery()
 @celery.task(name="serverhealthcheck")
 def serverhealthcheck():
     
-    svrs = admin_servers.query.filter_by().all()
-    for svr in svrs:
-        x = tasktestq.apply_async(args=[],queue='que')
-        result = celery.control.inspect().active()
-        logger.info(result)
+    
+    active_workers_ping = celery.control.inspect().ping()
+    active_workers = []
+    for worker in active_workers_ping:
+        worker_name = worker[7:]
+        if worker_name == "periodic":
+            continue
+        active_workers.append(worker_name)
+    
+    servers_offline = admin_servers.query.filter(admin_servers.domain_prefix not in active_workers).all()
+    for offline_svr in servers_offline:
+        offline_svr.server_health = "offline"
+        offline_svr.number_of_cores = None
+        offline_svr.total_ram = None
+        offline_svr.cpu_usage = None
+        offline_svr.ram_usage = None
+        offline_svr.total_disk = None
+        offline_svr.disk_usage = None
+        db.session.commit()
+    
+    for svr in active_workers:
+        if admin_servers.query.filter_by(domain_prefix=svr).first()==None:
+            continue
+        reportstats.apply_async(args=[],queue=svr)
+    
+    
 
        
 
@@ -33,7 +54,7 @@ def serverhealthcheck():
 def add_periodic(sender, **kwargs):
     
     
-    sender.add_periodic_task(3, serverhealthcheck.s(), name='serverhealthcheck',expires=10)
+    sender.add_periodic_task(10, serverhealthcheck.s(), name='serverhealthcheck',expires=120)
 
 # add periodic tasks here
 # example periodic task

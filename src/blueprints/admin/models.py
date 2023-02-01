@@ -34,11 +34,11 @@ class admin_servers(db.Model):
     server_state = db.Column(db.String)
     domain_prefix = db.Column(db.String)
     server_health = db.Column(db.String)
-    number_of_cores = db.Column(db.String)
-    total_ram = db.Column(db.String)
+    number_of_cores = db.Column(db.Integer)
     cpu_usage = db.Column(db.Integer)
+    total_ram = db.Column(db.Integer)
     ram_usage = db.Column(db.Integer)
-    total_disk = db.Column(db.String)
-    disk_usage = db.Column(db.String)
+    total_disk = db.Column(db.Float)
+    disk_usage = db.Column(db.Float)
 
 
