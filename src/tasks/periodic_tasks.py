@@ -5,7 +5,7 @@
 #################
 ##for beats : celery -A tasks.periodic_tasks beat --loglevel=info
 ##for woorker : celery -A tasks.periodic_tasks worker --loglevel=info -n periodic
-## for remote worker : celery -A tasks.remote_tasks worker --loglevel=info -Q que -n que1
+## for remote worker : celery -A tasks.remote_tasks worker --loglevel=info -Q first -n first
 
 from app import make_celery
 from celery.utils.log import get_task_logger
@@ -41,8 +41,11 @@ def serverhealthcheck():
         db.session.commit()
     
     for svr in active_workers:
-        if admin_servers.query.filter_by(domain_prefix=svr).first()==None:
+        svr_mod = admin_servers.query.filter_by(domain_prefix=svr).first()
+        if svr_mod==None:
             continue
+        svr_mod.server_health = "healthy"
+        db.session.commit()
         reportstats.apply_async(args=[],queue=svr)
     
     

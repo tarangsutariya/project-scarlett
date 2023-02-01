@@ -60,3 +60,92 @@ def settings_addserver():
     return "OK"
 
 
+
+
+@admin_settings_bp.route("/editserver",methods=["POST"])
+@admin_login_required
+def settings_editserver():
+
+    ip_to_add = request.json["ip"]
+    prefix_to_add = request.json["prefix"]
+    svr_id = request.json["server_id"]
+    ipregex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+    if not re.search(ipregex,ip_to_add):
+        return "INVALID IP"
+
+    svr_to_update = admin_servers.query.filter_by(server_id=svr_id).first()
+    if svr_to_update == None:
+        return "INVALILD SERVER ID"
+
+    ######################################
+    #########CASCADING EDIT EFFECTS HERE ###
+    if admin_servers.query.filter_by(ip_address=ip_to_add).first() != None:
+        return "IP address is already used by another server"
+    if admin_servers.query.filter_by(domain_prefix=prefix_to_add).first() != None:
+        return "prefix already in use"
+    
+    return "OK"
+
+
+@admin_settings_bp.route("/deleteserver",methods=["POST"])
+@admin_login_required
+def settings_deleteserver():
+    #########################
+    ##todo############
+    return "OK"
+
+
+
+
+
+
+@admin_settings_bp.route("/server/<server_id>")
+@admin_login_required
+def server_details(server_id):
+    svr = admin_servers.query.filter_by(server_id=server_id).first_or_404()
+    server_details = {}
+    server_details["server_id"]=svr.server_id
+    server_details["domain"]=svr.domain_prefix
+    server_details["ip"]=svr.ip_address
+    server_details["health"]=svr.server_health
+    if svr.number_of_cores == None or svr.server_health=="offline":
+        server_details["cores"]="NA"
+        server_details["cpu_usage"]="0"
+        server_details["cpu"]=0
+    else:
+        server_details["cores"]=svr.number_of_cores
+        server_details["cpu_usage"]=svr.cpu_usage
+        server_details["cpu"]=svr.cpu_usage
+    if svr.total_ram == None or svr.server_health=="offline":
+        server_details["total_ram"]="NA"
+        server_details["ram_usage"]="NA"
+        server_details["ram"]=0
+    else:
+        server_details["ram"]=round(100*(svr.ram_usage/svr.total_ram),1)
+        if svr.total_ram>1024:
+            server_details["total_ram"]=str(round(svr.total_ram/1024,2))+" GB"
+        else:
+            server_details["total_ram"]=str(svr.total_ram)+" MB"
+        if svr.ram_usage>1024:
+            server_details["ram_usage"]=str(round(svr.ram_usage/1024,2))+" GB"
+        else:
+            server_details["ram_usage"]=str(svr.ram_usage)+" MB"
+
+    if svr.total_disk==None or svr.server_health == "offline":
+        server_details["total_disk"]="NA"
+        server_details["disk_usage"]="NA"
+        server_details["disk"]=0
+    else:
+        server_details["disk"]=round(100*(svr.disk_usage/svr.total_disk),1)
+        if svr.total_disk>1024:
+            server_details["total_disk"]=str(round(svr.total_disk/1024,2))+" TB"
+        else:
+            server_details["total_disk"]=str(svr.total_disk)+" GB"
+        if svr.disk_usage>1024:
+            server_details["disk_usage"]=str(round(svr.disk_usage/1024,2))+" TB"
+        else:
+            server_details["disk_usage"]=str(svr.disk_usage)+" GB"
+
+
+
+    return render_template("server_details.html",username=session["admin_username"],svr=server_details)

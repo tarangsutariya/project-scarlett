@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Server details</title>
+    <meta name="description" content="login to admin pannel.">
+   
+
+
+
+    <!-- Pico.css -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+
+    <!-- Custom styles for this example -->
+    <script src="../../static/js/modal.js">   
+    </script>
+<script>
+
+  async function edit_server(element,svrid){
+    
+    document.getElementById("server_add_error").innerText=""
+    ip = document.getElementById("server_ip").value
+    domain_prefix = document.getElementById("domain_prefix").value
+  
+    if (!(/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip))) {  
+      document.getElementById("server_add_error").innerText="Invalid ip address"
+      return  
+    }  
+    if(domain_prefix==null || domain_prefix==""){
+      document.getElementById("server_add_error").innerText="Domain prefix cant be empty"
+      return
+    }
+     let res = await fetch('../editserver', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({"ip": ip, "prefix": domain_prefix,"server_id": svrid })
+    });
+     let restext = await res.text()
+     if(restext!="OK"){
+      document.getElementById("server_add_error").innerText=restext
+      return
+     }
+  
+    
+     location.reload()
+  } 
+  
+  </script>
+    
+
+<style>
+  @media(min-width : 640px){
+.uul {
+  list-style-type: none;
+  position: fixed;
+  width: 25%;
+
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: auto;
+}
+
+#contentblock{
+  margin-left:25%;
+  padding:1px 16px;
+  height:1000px;
+}
+  }
+@media(max-width : 640px) { 
+.uul{
+    float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  
+}
+.lii{
+    display: inline;
+    margin: 2px;
+}
+
+#contentblock{
+ 
+  padding:1px 16px;
+  height:1000px;
+}
+
+
+ }
+</style>
+<style>
+  .offline{
+     color:red;
+  }
+  .healthy{
+    color:lightgreen;
+  }
+</style>
+  </head>
+
+  <body>
+
+    <!-- Nav -->
+    <nav class="container-fluid">
+      <ul>
+        <li><a href="../" class="contrast" ><strong>Project Scarlett</strong></a></li>
+      
+      </ul>
+      <ul>
+        <li>
+          <details role="list" dir="rtl">
+            <summary aria-haspopup="listbox" role="link" class="secondary">Theme</summary>
+            <ul role="listbox">
+              <li><a href="#" data-theme-switcher="auto">Auto</a></li>
+              <li><a href="#" data-theme-switcher="light">Light</a></li>
+              <li><a href="#" data-theme-switcher="dark">Dark</a></li>
+            </ul>
+         
+          </details>
+        </li>
+      
+        <li>
+            <details role="list" dir="rtl">
+              <summary aria-haspopup="listbox" role="link" class="secondary">{{username}}</summary>
+              <ul role="listbox">
+                
+                <li><a href="/admin/settings">Settings</a></li>
+                <li><a href="/admin/logout">Log Out</a></li>
+                
+              </ul>
+            </details>
+          </li>
+
+      </ul>
+    </nav><!-- ./ Nav -->
+
+    <!-- Main -->
+    
+    <main class="container">
+        <ul class="uul">
+            <li class="lii"><a href="../account" >Account</a></li>
+            <li class="lii"><a href="../servers"  class="secondary">Servers</a></li>
+            <li class="lii"><a href="../users">Users</a></li>
+            <li class="lii"><a href="../deployments">Deployments</a></li>
+            <li class="lii"><a href="../notifications">Notifications</a></li>
+            
+          </ul>
+      
+          <div id="contentblock">
+          
+          <a href="../servers"> &larr; Back to server settings</a>
+           <br/><br/>
+      
+           <div>
+            
+            <p style="float: inline-start;">Domain Prefix : </p>
+            <p style="float: inline-end;" >{{svr["domain"]}}</p>
+           </div>
+           <br/><br/>
+           <div>
+            
+            <p style="float: inline-start;">IP Address : </p>
+            <p style="float: inline-end;">{{svr["ip"]}}</p>
+           </div>
+           <br/><br/>
+
+
+
+           <div>
+            
+            <p style="float: inline-start;">Server Status : </p>
+            <p style="float: inline-end;" class="{{svr['health']}}">{{svr["health"]}}</p>
+           </div>
+           <br/><br/>
+    <p> CPU usage : </p>
+          <progress value="{{svr['cpu']}}" max="100"></progress>
+          <div>
+            <p style="float: inline-start;">Logical Cores : {{svr["cores"]}}</p>
+            <p style="float: inline-end;">{{svr["cpu_usage"]}}%</p>
+
+          </div>
+          <br/><br/>
+            <div>
+          <p> RAM usage : </p>
+          <progress value="{{svr['ram']}}" max="100"></progress>
+          <div>
+            <p style="float: inline-start;">{{svr['ram_usage']}}/{{svr['total_ram']}}</p>
+            <p style="float: inline-end;">{{svr['ram']}}%</p>
+
+          </div>
+           <br/><br/>
+
+          <p> Disk usage : </p>
+          <progress value="{{svr['ram']}}" max="100"></progress>
+          <div>
+            <p style="float: inline-start;"> {{svr['disk_usage']}}/{{svr['total_disk']}} </p>
+            <p style="float: inline-end;">{{svr['disk']}}%</p>
+
+          </div>
+
+           <button data-target="modal-edit-server" onclick="document.getElementById('server_add_error').innerText='';toggleModal(event)">Edit</button>
+           <button style="background-color: red;border-color: red;" data-target="modal-delete-server" onClick="toggleModal(event)">Delete</button>
+          </div>
+
+    </main><!-- ./ Main -->
+
+
+
+
+    <!-- Footer -->
+    <!-- <footer class="container-fluid">
+     Project-Scarlett
+    </footer> -->
+    <!-- ./ Footer -->
+
+
+    <dialog id="modal-edit-server">
+      <article>
+        <a href="#close"
+          aria-label="Close"
+          class="close"
+          data-target="modal-edit-server"
+          onClick="toggleModal(event)">
+        </a>
+        <h3>Edit Server Details</h3>
+        <label>IP : </label>
+        <input id="server_ip" value="{{svr['ip']}}">
+        <label>Domain prefix : </label>
+        <input id="domain_prefix" value="{{svr['domain']}}">
+        <span></span><br/>
+        <span id="server_add_error" style="color: red;"></span>
+        <footer>
+          <a href="#cancel"
+            role="button"
+            class="secondary"
+            data-target="modal-edit-server"
+            onClick="toggleModal(event)">
+            Cancel
+          </a>
+          <a href="#confirm"
+            role="button"
+            data-target="modal-edit-server"
+            onClick="edit_server(event,{{svr['server_id']}})">
+           Save
+          </a>
+        </footer>
+      </article>
+      </dialog>
+
+
+
+
+      <dialog id="modal-delete-server">
+        <article>
+          <a href="#close"
+            aria-label="Close"
+            class="close"
+            data-target="modal-delete-server"
+            onClick="toggleModal(event)">
+          </a>
+          <h3>Are you sure?</h3>
+          <p>
+          Do you really want to delete server  {{svr["domain"]}}?  This action is irreversible, and will delete all deployments on this server
+          </p>
+        <p>To confirm please Enter domain prefix of server "{{svr["domain"]}}" in the textbox below</p>
+
+        <label>Enter Domain Prefix of server to be deleted</label>
+          <input type="text">
+          <footer>
+            <a href="#cancel"
+              role="button"
+              class="secondary"
+              data-target="modal-delete-server"
+              onClick="toggleModal(event)">
+              Cancel
+            </a>
+            <a href="#confirm"
+              role="button" style="background-color: red; border-color: red;"
+              data-target="modal-delete-server"
+              onClick="deletetoken();toggleModal(event)">
+              Delete
+            </a>
+          </footer>
+        </article>
+        </dialog>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Minimal theme switcher -->
+    <script src="/admin/static/js/minimal-theme-switcher.js"></script>
+
+
+
+
+
+
+
+
+  </body>
+
+</html>
