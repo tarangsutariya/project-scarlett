@@ -29,8 +29,11 @@ def serverhealthcheck():
             continue
         active_workers.append(worker_name)
     
-    servers_offline = admin_servers.query.filter(admin_servers.domain_prefix not in active_workers).all()
+    servers_offline = admin_servers.query.filter_by().all()
     for offline_svr in servers_offline:
+        if offline_svr.domain_prefix in active_workers:
+            continue
+        
         offline_svr.server_health = "offline"
         offline_svr.number_of_cores = None
         offline_svr.total_ram = None
@@ -57,7 +60,7 @@ def serverhealthcheck():
 def add_periodic(sender, **kwargs):
     
     
-    sender.add_periodic_task(10, serverhealthcheck.s(), name='serverhealthcheck',expires=120)
+    sender.add_periodic_task(30, serverhealthcheck.s(), name='serverhealthcheck',expires=300)
 
 # add periodic tasks here
 # example periodic task

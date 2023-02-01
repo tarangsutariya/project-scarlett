@@ -6,3 +6,6 @@ PyGithub
 celery
 cloudflare
 psutil
+redis
+psycopg2-binary
+bcrypt
