@@ -147,7 +147,5 @@ def server_details(server_id):
             server_details["disk_usage"]=str(svr.disk_usage)+" GB"
 
 
-    print(svr.number_of_cores)
-    print()
-    print()
+
     return render_template("server_details.html",username=session["admin_username"],svr=server_details)
