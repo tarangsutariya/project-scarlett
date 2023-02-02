@@ -30,7 +30,8 @@ class admin_token_orgs(db.Model):
 
 class admin_servers(db.Model):
     server_id = db.Column(db.Integer,primary_key=True)
-    user_id = db.Column(db.Integer,primary_key=True)
+    server_location_code = db.Column(db.String)
+    server_location_description = db.Column(db.String)
     ip_address = db.Column(db.String)
     server_state = db.Column(db.String)
     domain_prefix = db.Column(db.String)

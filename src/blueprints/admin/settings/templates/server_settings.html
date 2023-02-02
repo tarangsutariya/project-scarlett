@@ -24,10 +24,15 @@
 <script>
 
 async function add_server(element){
+  
+
   document.getElementById("server_add_error").innerText=""
   ip = document.getElementById("server_ip").value
   domain_prefix = document.getElementById("domain_prefix").value
+  locationcode = document.getElementById("serverlocation").value
+  locationdes = document.getElementById("locationdescription").value
 
+  
   if (!(/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip))) {  
     document.getElementById("server_add_error").innerText="Invalid ip address"
     return  
@@ -36,13 +41,18 @@ async function add_server(element){
     document.getElementById("server_add_error").innerText="Domain prefix cant be empty"
     return
   }
+  if (locationdes==null || locationdes==""){
+    document.getElementById("server_add_error").innerText="location description cannot be empty"
+    return
+  }
+
    let res = await fetch('./addserver', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({"ip": ip, "prefix": domain_prefix})
+    body: JSON.stringify({"ip": ip, "prefix": domain_prefix,"locationcode":locationcode,"locationdesc":locationdes})
   });
    let restext = await res.text()
    if(restext!="OK"){
@@ -252,11 +262,24 @@ async function add_server(element){
           data-target="modal-add-server"
           onClick="toggleModal(event)">
         </a>
-        <h3>Add Server</h3>
+        <h5>Add Server</h5>
         <label>IP : </label>
-        <input id="server_ip">
+        <input id="server_ip" autocomplete="off">
         <label>Domain prefix : </label>
-        <input id="domain_prefix">
+        <input id="domain_prefix" autocomplete="off">
+       
+        <label>Server Location : </label>
+        <select id="serverlocation">
+      
+         
+          {% for key,value in countries.items() %}
+          <option value="{{value}}"> {{key}} </option>
+            {% endfor %}
+        </select>
+        <label>Location Description: </label>
+        <input id="locationdescription" autocomplete="off">
+
+
         <span></span><br/>
         <span id="server_add_error" style="color: red;"></span>
         <footer>

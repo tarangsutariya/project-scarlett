@@ -23,6 +23,8 @@
     document.getElementById("server_add_error").innerText=""
     ip = document.getElementById("server_ip").value
     domain_prefix = document.getElementById("domain_prefix").value
+    locationcode = document.getElementById("serverlocation").value
+  locationdes = document.getElementById("locationdescription").value
   
     if (!(/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip))) {  
       document.getElementById("server_add_error").innerText="Invalid ip address"
@@ -32,13 +34,19 @@
       document.getElementById("server_add_error").innerText="Domain prefix cant be empty"
       return
     }
+
+    if (locationdes==null || locationdes==""){
+    document.getElementById("server_add_error").innerText="location description cannot be empty"
+    return
+  }
+
      let res = await fetch('../editserver', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({"ip": ip, "prefix": domain_prefix,"server_id": svrid })
+      body: JSON.stringify({"ip": ip, "prefix": domain_prefix,"server_id": svrid,"locationcode":locationcode,"locationdesc":locationdes })
     });
      let restext = await res.text()
      if(restext!="OK"){
@@ -172,7 +180,14 @@
             <p style="float: inline-end;">{{svr["ip"]}}</p>
            </div>
            <br/><br/>
-
+          
+           <div>
+            
+            <p style="float: inline-start;">Location: </p>
+            <p style="float: inline-end;" > 
+              <img src="/static/flags/{{svr['location_code']}}.svg" style="height: 24px; margin-top: -8px;"> {{svr["location_description"]}}</p>
+           </div>
+           <br/><br/>
 
 
            <div>
@@ -236,6 +251,22 @@
         <input id="server_ip" value="{{svr['ip']}}">
         <label>Domain prefix : </label>
         <input id="domain_prefix" value="{{svr['domain']}}">
+
+        <label>Server Location : </label>
+        <select id="serverlocation" autocomplete="off">
+      
+         
+          {% for key,value in countries.items() %}
+          <option value="{{value}}"  
+          {%if value==svr["location_code"]%}
+          selected
+          {% endif%}
+          > {{key}} </option>
+            {% endfor %}
+        </select>
+        <label>Location Description: </label>
+        <input id="locationdescription" autocomplete="off" value="{{svr['location_description']}}">
+
         <span></span><br/>
         <span id="server_add_error" style="color: red;"></span>
         <footer>

@@ -2,6 +2,7 @@ from flask import Blueprint,render_template,session,redirect,url_for,request,fla
 from ..admin_login_manager import admin_login_required
 from ..models import admin_user,admin_servers
 from models import db
+from blueprints.deployement.countries import countries_to_ALPHA2,ALPHA2_to_countries
 import re
 admin_settings_bp = Blueprint("settings",__name__,template_folder="templates",static_folder="static")
 
@@ -39,7 +40,7 @@ def settings_servers():
 
     servers_list = admin_servers.query.filter_by().all()
     
-    return render_template("server_settings.html",username=session["admin_username"],servers_list=servers_list)
+    return render_template("server_settings.html",username=session["admin_username"],servers_list=servers_list,countries=countries_to_ALPHA2)
 
 
 @admin_settings_bp.route("/addserver",methods=["POST"])
@@ -47,6 +48,8 @@ def settings_servers():
 def settings_addserver():
     ip_to_add = request.json["ip"]
     prefix_to_add = request.json["prefix"]
+    location_code = request.json["locationcode"]
+    location_desc = request.json["locationdesc"]
     ipregex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
     if not re.search(ipregex,ip_to_add):
         return "INVALID IP"
@@ -54,7 +57,11 @@ def settings_addserver():
         return "IP address is already used by another server"
     if admin_servers.query.filter_by(domain_prefix=prefix_to_add).first() != None:
         return "prefix already in use"
-    svr_to_add = admin_servers(ip_address=ip_to_add,domain_prefix=prefix_to_add,server_health="offline")
+    if location_code not in ALPHA2_to_countries:
+        return "INVALID LOCATION CODE"
+    if location_desc=="":
+        return "location description is required"
+    svr_to_add = admin_servers(ip_address=ip_to_add,domain_prefix=prefix_to_add,server_health="offline",server_location_code=location_code,server_location_description=location_desc)
     db.session.add(svr_to_add)
     db.session.commit()
     return "OK"
@@ -107,6 +114,8 @@ def server_details(server_id):
     server_details["server_id"]=svr.server_id
     server_details["domain"]=svr.domain_prefix
     server_details["ip"]=svr.ip_address
+    server_details["location_code"]=svr.server_location_code
+    server_details["location_description"]=svr.server_location_description
     server_details["health"]=svr.server_health
     if svr.number_of_cores == None or svr.server_health=="offline":
         server_details["cores"]="NA"
@@ -148,4 +157,4 @@ def server_details(server_id):
 
 
 
-    return render_template("server_details.html",username=session["admin_username"],svr=server_details)
+    return render_template("server_details.html",username=session["admin_username"],svr=server_details,countries=countries_to_ALPHA2)

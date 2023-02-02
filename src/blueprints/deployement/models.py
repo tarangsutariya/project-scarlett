@@ -5,6 +5,7 @@ class deployments(db.Model):
     deploy_id = db.Column(db.Integer,primary_key = True)
     repo_id = db.Column(db.Integer)
     repo_name = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
     repo_owner_id = db.Column(db.Integer)
     repo_owner = db.Column(db.String)
     server_id  = db.Column(db.Integer)
@@ -24,8 +25,14 @@ class deployments(db.Model):
     interal_ip = db.Column(db.String)
     tap_device = db.Column(db.String)
 
+
 class deployement_ports(db.Model):
     r_id = db.Column(db.Integer,primary_key = True)
+    internal_port = db.Column(db.Integer)
+    protocol = db.Column(db.String)
+    custom_domain = db.Column(db.String)
+    external_port = db.Column(db.Integer)
+    
 
     
 
