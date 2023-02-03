@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard</title>
+    <meta name="description" content="login to admin pannel.">
+   
+
+
+
+    <!-- Pico.css -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+
+    <!-- Custom styles for this example -->
+    
+
+  <script>
+  let owners =  {{owners|tojson|safe}}
+
+  function showtab(){
+    curr =  document.getElementById("gitowner").value
+    for(owner in owners){
+      
+         document.getElementById(owners[owner]).style.display="none"
+
+
+    }
+
+    document.getElementById(curr).style.display=""
+  }
+
+
+
+  </script>
+
+
+
+
+
+  </head>
+
+  <body>
+
+    <!-- Nav -->
+    <nav class="container-fluid">
+      <ul>
+        <li><a href="./" class="contrast" ><strong>Project Scarlett</strong></a></li>
+      
+      </ul>
+      <ul>
+        <li>
+          <details role="list" dir="rtl">
+            <summary aria-haspopup="listbox" role="link" class="secondary">Theme</summary>
+            <ul role="listbox">
+              <li><a href="#" data-theme-switcher="auto">Auto</a></li>
+              <li><a href="#" data-theme-switcher="light">Light</a></li>
+              <li><a href="#" data-theme-switcher="dark">Dark</a></li>
+            </ul>
+         
+          </details>
+        </li>
+      
+        <li>
+            <details role="list" dir="rtl">
+              <summary aria-haspopup="listbox" role="link" class="secondary">tarangsutariya</summary>
+              <ul role="listbox">
+               
+                <li><a href="./settings">Settings</a></li>
+                <li><a href="./logout">Log Out</a></li>
+                
+              </ul>
+            </details>
+          </li>
+
+      </ul>
+    </nav><!-- ./ Nav -->
+
+    <!-- Main -->
+    
+    <main class="container">
+        <div>
+        <select style="width: 49.5%; float: inline-start;" autocomplete="off" id="gitowner" onchange="showtab()">
+        {% for owner in owners %}
+          <option value="{{owner}}">{{owner}}</option>
+        {% endfor%}
+        <option value="importfromexternal"> import from external repo </option>
+        </select>
+
+        <input placeholder="search" style="width: 49.5%; float: inline-end;"> </div>
+         
+
+        
+        {% for key in repos %}
+        <table role="grid" id="{{key}}"
+        {% if key !=owners[0] %}
+             style="display: none;"
+        {% endif%}
+             >
+            <thead><tr><td></td></tr></thead>
+             {% for repo in repos[key] %}
+                <tr>
+                    <td> 
+
+                      <a style="margin-bottom :5px;" href="https://github.com/{{key}}/{{repo[1]}}"> {{key}}/{{repo[1]}} </a>
+                      <a href="./config/repo/{{repo[0]}}" role="button" class="outline" style="padding: 4px; float: right;">Deploy</a>
+                    </td>
+        
+                    </tr>
+
+                    {%  endfor %}
+                 
+        </table>
+
+        {%  endfor %}
+     
+       
+     
+    </main><!-- ./ Main -->
+
+
+
+
+    <!-- Footer -->
+    <!-- <footer class="container-fluid">
+     Project-Scarlett
+    </footer> -->
+    <!-- ./ Footer -->
+
+
+
+    <!-- Minimal theme switcher -->
+    <script src="./static/js/minimal-theme-switcher.js"></script>
+
+  </body>
+
+</html>

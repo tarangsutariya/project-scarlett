@@ -1,6 +1,7 @@
 from flask import Blueprint,session,redirect,url_for,render_template,flash,request,abort
 from models import db,user_requests,users
 from .login_manager import user_login_required
+from github import Github
 import time
 users_bp = Blueprint("users",__name__,template_folder="templates",static_folder="static")
 
@@ -99,6 +100,32 @@ def user_not_approved():
     
     return render_template("user_notapproved.html",notFound=False,github_username=session["user_githubusername"],
            request_id=session["pending_request_id"])
+
+
+
+
+@users_bp.route("/deploy")
+@user_login_required
+def create_deploy():
+    usr = users.query.filter_by(user_id=session["user_userid"]).first()
+    g = Github(usr.github_oauth_token)
+    g_usr = g.get_user()
+    repos = {}
+    for repo in g_usr.get_repos():
+        if repo.owner.login  not in repos:
+            repos[repo.owner.login]=[]
+        repos[repo.owner.login].append([repo.id,repo.name])
+    
+    owner_list = [session["user_githubusername"]]
+    for owner in repos:
+        if owner == session["user_githubusername"]:
+            continue
+        owner_list.append(owner)
+    return render_template("deploy_new.html",owners=owner_list,repos=repos)
+
+
+
+
 
 
 
