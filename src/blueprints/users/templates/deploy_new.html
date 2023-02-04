@@ -21,14 +21,19 @@
 
   function showtab(){
     curr =  document.getElementById("gitowner").value
+    customadd = document.getElementById("addcustom")
+    customadd.style.display="none"
     for(owner in owners){
       
          document.getElementById(owners[owner]).style.display="none"
 
 
     }
-
+    if(curr=="importfromexternal"){
+      customadd.style.display=""
+    }else{
     document.getElementById(curr).style.display=""
+    }
   }
 
 
@@ -104,7 +109,7 @@
                     <td> 
 
                       <a style="margin-bottom :5px;" href="https://github.com/{{key}}/{{repo[1]}}"> {{key}}/{{repo[1]}} </a>
-                      <a href="./config/repo/{{repo[0]}}" role="button" class="outline" style="padding: 4px; float: right;">Deploy</a>
+                      <a href="./config/repo?id={{repo[0]}}" role="button" class="outline" style="padding: 4px; float: right;">Deploy</a>
                     </td>
         
                     </tr>
@@ -115,6 +120,19 @@
 
         {%  endfor %}
      
+               <div id="addcustom" style="display: none;">
+               <label> Enter repo to be imported : </label>
+               <input type="text" placeholder="tarangsutariya/Project-Scarlett">
+               <label> if the repo is private paste an access token here </label>
+               <input type="text">
+               <button class="outline">Import</button>
+
+ 
+
+
+               </div>
+
+
        
      
     </main><!-- ./ Main -->

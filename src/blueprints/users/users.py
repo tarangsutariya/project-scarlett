@@ -125,6 +125,14 @@ def create_deploy():
 
 
 
+@users_bp.route('/config/repo')
+@user_login_required
+def configuredeployment():
+    return render_template("configure_new_deploy.html")
+
+
+    
+
 
 
 
