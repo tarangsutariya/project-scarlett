@@ -60,7 +60,7 @@ def serverhealthcheck():
 def add_periodic(sender, **kwargs):
     
     
-    sender.add_periodic_task(30, serverhealthcheck.s(), name='serverhealthcheck',expires=300)
+    sender.add_periodic_task(60, serverhealthcheck.s(), name='serverhealthcheck',expires=300)
 
 # add periodic tasks here
 # example periodic task

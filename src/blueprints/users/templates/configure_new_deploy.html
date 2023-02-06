@@ -216,8 +216,8 @@ Range slider
               <summary aria-haspopup="listbox" role="link" class="secondary">tarangsutariya</summary>
               <ul role="listbox">
                
-                <li><a href="./settings">Settings</a></li>
-                <li><a href="./logout">Log Out</a></li>
+                <li><a href="/dashboard/settings">Settings</a></li>
+                <li><a href="/dashboard/logout">Log Out</a></li>
                 
               </ul>
             </details>
@@ -229,65 +229,38 @@ Range slider
     <!-- Main -->
     
     <main class="container">
-          <h4>Deploying <a>tarangsutariya/Project-scarlett</a></h4>
+          <h4>Deploying <a href="{{details['repo_url']}}">{{details["owner_name"]}}/{{details["repo_name"]}}</a></h4>
           
           <label> Branch to deploy : </label>
-          <select>  <option>main</option> </select>
+
+
+          <select autocomplete="off">   
+           {% for branch in details["branches"] %}
+           <option value="{{branch}}">{{branch}}</option>
+               {% endfor %}
+          </select>
+
+
           <label>
             Server : 
           </label>
 <!--SERVER GIRD-->
 <div class="grid">
- 
+ {% for svr in details["svrs"] %}
   <label class="card">
-    <input name="plan" class="radio" type="radio" checked>
+    <input name="plan" class="radio" type="radio" autocomplete="off" onchange="renderconf({{loop.index0}})">
     
     <span class="plan-details">
-      <span class="plan-type">AMS1</span>
+      <span class="plan-type">{{svr["domain_prefix"]}}</span>
       <span class="plan-cost">
-    <svg xmlns="http://www.w3.org/2000/svg" style="height:60px; margin-top:10px;margin-bottom: 10px" viewBox="0 85.5 513 342"><path fill="#FFF" d="M0 85.5h513v342H0z"/><path fill="#cd1f2a" d="M0 85.5h513v114H0z"/><path fill="#1d4185" d="M0 312h513v114H0z"/></svg>
+    <!-- <svg xmlns="http://www.w3.org/2000/svg" style="height:60px; margin-top:10px;margin-bottom: 10px" viewBox="0 85.5 513 342"><path fill="#FFF" d="M0 85.5h513v342H0z"/><path fill="#cd1f2a" d="M0 85.5h513v114H0z"/><path fill="#1d4185" d="M0 312h513v114H0z"/></svg> -->
+  <img src="/static/flags/{{svr['server_location_code']}}.svg" style="height:60px; margin-top:10px;margin-bottom: 10px">
   </span> 
-      <span>Amsterdam,NL</span>
+      <span>{{svr["server_location_description"]}},{{svr["server_location_code"]}}</span>
     </span>
   </label>
 
-  <label class="card">
-    <input name="plan" class="radio" type="radio" checked>
-    
-    <span class="plan-details">
-      <span class="plan-type">AMS1</span>
-      <span class="plan-cost">
-    <svg xmlns="http://www.w3.org/2000/svg" style="height:60px; margin-top:10px;margin-bottom: 10px" viewBox="0 85.5 513 342"><path fill="#FFF" d="M0 85.5h513v342H0z"/><path fill="#cd1f2a" d="M0 85.5h513v114H0z"/><path fill="#1d4185" d="M0 312h513v114H0z"/></svg>
-  </span> 
-      <span>Amsterdam,NL</span>
-    </span>
-  </label>
-
-
-  <label class="card">
-    <input name="plan" class="radio" type="radio" checked>
-    
-    <span class="plan-details">
-      <span class="plan-type">AMS1</span>
-      <span class="plan-cost">
-    <svg xmlns="http://www.w3.org/2000/svg" style="height:60px; margin-top:10px;margin-bottom: 10px" viewBox="0 85.5 513 342"><path fill="#FFF" d="M0 85.5h513v342H0z"/><path fill="#cd1f2a" d="M0 85.5h513v114H0z"/><path fill="#1d4185" d="M0 312h513v114H0z"/></svg>
-  </span> 
-      <span>Amsterdam,NL</span>
-    </span>
-  </label>
-
-
-  <label class="card">
-    <input name="plan" class="radio" type="radio" checked>
-    
-    <span class="plan-details">
-      <span class="plan-type">AMS1</span>
-      <span class="plan-cost">
-    <svg xmlns="http://www.w3.org/2000/svg" style="height:60px; margin-top:10px;margin-bottom: 10px" viewBox="0 85.5 513 342"><path fill="#FFF" d="M0 85.5h513v342H0z"/><path fill="#cd1f2a" d="M0 85.5h513v114H0z"/><path fill="#1d4185" d="M0 312h513v114H0z"/></svg>
-  </span> 
-      <span>Amsterdam,NL</span>
-    </span>
-  </label>
+{% endfor %}
   
   
   
@@ -297,7 +270,7 @@ Range slider
 <!--SERVERGRID END-->
 
 <br/>
-<div>
+<div id="afterserver" style="display: none;">
 
 
     <h5>Resource Configuration : </h5>
@@ -425,6 +398,32 @@ Range slider
 
     <!-- Minimal theme switcher -->
     <script src="../static/js/minimal-theme-switcher.js"></script>
+
+
+
+<script>
+
+let details = {{details|tojson}}
+
+
+function renderconf(i){
+
+
+
+
+console.log(details)
+
+
+
+
+document.getElementById("afterserver").style.display=""
+
+}
+
+
+</script>
+
+
 
 
 

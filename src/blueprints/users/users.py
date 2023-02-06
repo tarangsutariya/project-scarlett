@@ -1,14 +1,20 @@
 from flask import Blueprint,session,redirect,url_for,render_template,flash,request,abort
 from models import db,user_requests,users
+from blueprints.admin.models import admin_token_orgs,admin_github_tokens,admin_servers
 from .login_manager import user_login_required
 from github import Github
 import time
+from config import minimum_ram,minimum_disk,minimum_cpu
+from blueprints.deployement.countries import random_words
+import random
 users_bp = Blueprint("users",__name__,template_folder="templates",static_folder="static")
 
 ######DANGER DELETE THIS##
 @users_bp.route("/grid")
 def user_grid():
     return render_template("testgrid.html")
+
+
 
 @users_bp.route("/")
 @user_login_required
@@ -128,7 +134,65 @@ def create_deploy():
 @users_bp.route('/config/repo')
 @user_login_required
 def configuredeployment():
-    return render_template("configure_new_deploy.html")
+    repo_id = request.args.get('id')
+    github_access_token = request.args.get('token')
+    org_needed_to_access = request.args.get("org")
+    g = Github()
+    if org_needed_to_access!=None:
+        try:
+            org_needed_to_access=int(org_needed_to_access)
+        except:
+            abort(418)
+        orgg =  admin_token_orgs.query.filter_by(org_id=org_needed_to_access).first_or_404()
+        tkn = admin_github_tokens.query.filter_by(token_id=orgg.token_id).first_or_404().github_token
+        g=Github(tkn)
+    elif github_access_token !=None:
+        g=Github(github_access_token)
+    try:
+        repo = g.get_repo(int(repo_id))
+    except:
+        return redirect(url_for("users.create_deploy"))
+    dep_details = {}
+    dep_details["repo_url"]=repo.html_url
+    dep_details["repo_id"]=repo.id
+    dep_details["owner_id"]=repo.owner.id
+    dep_details["owner_name"]=repo.owner.login
+    dep_details["repo_name"]=repo.name
+    dep_details["min_cpu"]=minimum_cpu
+    dep_details["min_ram"]=minimum_ram
+    dep_details["min_disk"]=minimum_disk
+    dep_details["ram_step"]=128
+    dep_details["disk_step"]=0.5
+    dep_details["cpu_step"]=1
+
+    branches = []
+    branches.append(repo.default_branch)
+    for branch in repo.get_branches():
+        if branch.name == branches[0]:
+            continue
+        branches.append(branch.name)
+    dep_details["branches"]=branches
+
+    svrs = admin_servers.query.filter_by().all()
+    dep_details["svrs"]=[]
+    usr = users.query.filter_by(user_id=session["user_userid"]).first()
+    for svr in svrs:
+        if svr.server_health!="offline" and  (svr.total_ram-svr.ram_usage>=minimum_ram) and (svr.total_disk-svr.disk_usage>=minimum_disk):
+            svr_details = {}
+            svr_details["server_id"]=svr.server_id
+            svr_details["server_location_code"]=svr.server_location_code
+            svr_details["server_location_description"]=svr.server_location_description
+            svr_details["domain_prefix"]=svr.domain_prefix
+            svr_details["av_cpu"]=min(svr.number_of_cores,usr.max_cpu_cores)
+            svr_details["av_ram"]=min(svr.total_ram-svr.ram_usage,usr.max_ram)
+            svr_details["av_disk"]=min(svr.total_disk-svr.disk_usage,usr.max_disk)
+        
+
+
+            dep_details["svrs"].append(svr_details)
+    
+    
+    return render_template("configure_new_deploy.html",details=dep_details)
 
 
     

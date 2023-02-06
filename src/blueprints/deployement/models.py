@@ -18,6 +18,7 @@ class deployments(db.Model):
     primary_domain = db.Column(db.String)
     secondary_domain = db.Column(db.String)
     last_deployment_status = db.Column(db.Strig)
+    deployment_process_desc = db.Column(db.String)
     cpu_allocated = db.Column(db.Integer)
     ram_allocated = db.Column(db.Integer)
     disk_allocated = db.Column(db.Float)
@@ -26,6 +27,8 @@ class deployments(db.Model):
     disk_usage = db.Column(db.Float)
     interal_ip = db.Column(db.String)
     tap_device = db.Column(db.String)
+    redeploy_process = db.Column(db.String)
+    env_variables = db.Column(db.JSON)
 
 
 class deployement_ports(db.Model):
