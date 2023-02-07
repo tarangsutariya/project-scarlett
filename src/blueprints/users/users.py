@@ -4,7 +4,7 @@ from blueprints.admin.models import admin_token_orgs,admin_github_tokens,admin_s
 from .login_manager import user_login_required
 from github import Github
 import time
-from config import minimum_ram,minimum_disk,minimum_cpu
+from config import minimum_ram,minimum_disk,minimum_cpu,domains
 from blueprints.deployement.countries import random_words
 import random
 users_bp = Blueprint("users",__name__,template_folder="templates",static_folder="static")
@@ -164,6 +164,7 @@ def configuredeployment():
     dep_details["ram_step"]=128
     dep_details["disk_step"]=0.5
     dep_details["cpu_step"]=1
+    dep_details["domains"]=domains
 
     branches = []
     branches.append(repo.default_branch)
@@ -172,6 +173,7 @@ def configuredeployment():
             continue
         branches.append(branch.name)
     dep_details["branches"]=branches
+
 
     svrs = admin_servers.query.filter_by().all()
     dep_details["svrs"]=[]
@@ -186,7 +188,7 @@ def configuredeployment():
             svr_details["av_cpu"]=min(svr.number_of_cores,usr.max_cpu_cores)
             svr_details["av_ram"]=min(svr.total_ram-svr.ram_usage,usr.max_ram)
             svr_details["av_disk"]=min(svr.total_disk-svr.disk_usage,usr.max_disk)
-        
+         
 
 
             dep_details["svrs"].append(svr_details)

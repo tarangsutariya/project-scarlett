@@ -248,7 +248,7 @@ Range slider
 <div class="grid">
  {% for svr in details["svrs"] %}
   <label class="card">
-    <input name="plan" class="radio" type="radio" autocomplete="off" onchange="renderconf({{loop.index0}})">
+    <input name="plan" id="s{{loop.index0}}" value="{{svr.server_id}}" class="radio" type="radio" autocomplete="off" onchange="renderconf({{loop.index0}})">
     
     <span class="plan-details">
       <span class="plan-type">{{svr["domain_prefix"]}}</span>
@@ -277,20 +277,20 @@ Range slider
     <br/> 
 
     <div>
-    <label style="float:inline-start">CPU Cores : (1 - 3)</label>
+    <label id="cpusl" style="float:inline-start">CPU Cores : (1 - 3)</label>
 
-    <input type="number" style="min-width: 200px; max-width: 200px; float: inline-end;" min="1" max="2">
+    <input type="number" id="cpus" autocomplete="off" style="min-width: 200px; max-width: 200px; float: inline-end;" >
   </div>
 
 
 <br/><br/><br/>
   <div>
-    <label style="float:inline-start">Ram : (128 MB - 4 GB)</label>
+    <label id="raml" style="float:inline-start">Ram : (128 MB - 4 GB)</label>
     <div style="float: inline-end; max-width: 320px; min-width: 320px;">
-      <input type="number" style="min-width: 200px; max-width: 200px; float: inline-start;" min="1" max="2">
-    <select style="min-width: 120px; max-width: 120px;float: inline-end;"">
-      <option>MB</option>
-      <option>GB</option>
+      <input type="number" autocomplete="off" id="rami" onchange="inputram()" style="min-width: 200px; max-width: 200px; float: inline-start;" >
+    <select id="rams" autocomplete="off" style="min-width: 120px; max-width: 120px;float: inline-end;"">
+      <option value="MB">MB</option>
+      <option value="GB">GB</option>
     </select>
  </div>
   </div>
@@ -298,12 +298,12 @@ Range slider
 
   <br/><br/><br/>
   <div>
-    <label style="float:inline-start">Disk : (20 GB - 80 GB)</label>
+    <label id="diskl" style="float:inline-start">Disk : (20 GB - 80 GB)</label>
     <div style="float: inline-end; max-width: 320px; min-width: 320px;">
-      <input type="number" style="min-width: 200px; max-width: 200px; float: inline-start;" min="0.001" max="2" step="0.001">
-    <select style="min-width: 120px; max-width: 120px;float: inline-end;"">
-      <option>GB</option>
-      <option>TB</option>
+      <input type="number" autocomplete="off" id="diski" onchange="inputdisk()" style="min-width: 200px; max-width: 200px; float: inline-start;"  step="1">
+    <select id="disks" autocomplete="off" style="min-width: 120px; max-width: 120px;float: inline-end;"">
+      <option value="GB">GB</option>
+      <option value="TB">TB</option>
     </select>
  </div>
   </div>
@@ -312,8 +312,10 @@ Range slider
 <label>Subdomain : </label>
 <div>
 <input type="text" style="width: 80%; float: inline-start;">
-<select style="width: 20%; float: inline-end;">
-  <option>firevm.xyz</option>
+<select id="subdomain" autocomplete="off" style="width: 20%; float: inline-end;">
+            {% for domain in details["domains"]%}
+        <option value="{{domain}}">{{domain}}</option>
+            {% endfor %}
 </select>
 </div>
 
@@ -332,7 +334,7 @@ Range slider
 
 <label>Environment Variables</label><br/>
 <div>
-<input style="float: inline-start;width: 48%; margin-right: 2%;"><input style="float: inline-end;width: 48%; ">
+<input autocomplete="off" style="float: inline-start;width: 48%; margin-right: 2%;"><input autocomplete="off" style="float: inline-end;width: 48%; ">
 
 </div>
 <a href="#" role="button" class="outline" style="float: inline-end;">Add</a>
@@ -403,20 +405,124 @@ Range slider
 
 <script>
 
+let curr= 0
+
 let details = {{details|tojson}}
 
 
 function renderconf(i){
+curr=i
+document.getElementById("cpusl").innerText="CPU Cores : ( " + details["min_cpu"] + " - " +  details["svrs"][i]["av_cpu"] + " )"
+
+let cpu = document.getElementById("cpus")
+if(cpu.value> details["svrs"][i]["av_cpu"]){
+  cpu.value= details["svrs"][i]["av_cpu"]
+}
+
+rammin=""
+ramav = ""
+if(details["min_ram"]>1024){
+  rammin=String((details["min_ram"]/1024).toFixed(2))+" GB"
+}else{
+  rammin=String((details["min_ram"]))+" MB"
+}
+
+if(details["svrs"][i]["av_ram"]>1024){
+  ramav=String((details["svrs"][i]["av_ram"]/1024).toFixed(2))+" GB"
+}else{
+  ramav=String((details["svrs"][i]["av_ram"]))+" MB"
+}
+
+
+
+document.getElementById("raml").innerText="Ram : ( " + rammin + " - " +  ramav + " )"
 
 
 
 
-console.log(details)
+diskmin=""
+diskav = ""
+if(details["min_disk"]>1024){
+  diskmin=String((details["min_disk"]/1024).toFixed(2))+" TB"
+}else{
+  diskmin=String((details["min_disk"]))+" GB"
+}
 
+if(details["svrs"][i]["av_disk"]>1024){
+  diskav=String((details["svrs"][i]["av_disk"]/1024).toFixed(2))+" TB"
+}else{
+  diskav=String((details["svrs"][i]["av_disk"]))+" GB"
+}
+
+
+
+document.getElementById("diskl").innerText="Disk : ( " + diskmin + " - " +  diskav + " )"
+
+let rami = document.getElementById("rami")
+let rams = document.getElementById("rams")
+if(rams.value=="MB" && rami.value> details["svrs"][i]["av_ram"]){
+  rami.value= details["svrs"][i]["av_ram"]
+}else if(rams.value=="GB" && (rami.value*1024) > details["svrs"][i]["av_ram"]){
+  rami.value= (details["svrs"][i]["av_ram"]/1024).toFixed(2)
+}
+
+let diski = document.getElementById("diski")
+let disks = document.getElementById("disks")
+if(disks.value=="GB" && diski.value> details["svrs"][i]["av_disk"]){
+  diski.value= details["svrs"][i]["av_disk"]
+}else if(disks.value=="TB" && (diski.value*1024) > details["svrs"][i]["av_disk"]){
+  diski.value= (details["svrs"][i]["av_disk"]/1024).toFixed(2)
+}
 
 
 
 document.getElementById("afterserver").style.display=""
+
+}
+
+
+function inputram(){
+let rami = document.getElementById("rami")
+let rams = document.getElementById("rams")
+if(rams.value=="MB"){
+rami.value=parseInt(rami.value)
+if(rami.value>details["svrs"][curr]["av_ram"]){
+  rami.value=details["svrs"][curr]["av_ram"]
+}
+
+}
+
+if(rams.value=="GB" && (details["svrs"][curr]["av_ram"]/1024).toFixed(2)<rami.value){
+  rami.value=(details["svrs"][curr]["av_ram"]/1024).toFixed(2)
+}
+
+
+}
+
+function inputdisk(){
+let diski = document.getElementById("diski")
+let disks = document.getElementById("disks")
+if(disks.value=="GB"){
+diski.value=parseInt(diski.value)
+if(diski.value>details["svrs"][curr]["av_disk"]){
+  diski.value=details["svrs"][curr]["av_disk"]
+}
+
+}
+
+if(disks.value=="TB" && (details["svrs"][curr]["av_disk"]/1024).toFixed(2)<diski.value){
+  diski.value=(details["svrs"][curr]["av_disk"]/1024).toFixed(2)
+}
+
+
+}
+
+
+function inputcpu(){
+let cpus = document.getElementById("cpus")
+if(cpus.value>details)
+
+
 
 }
 
