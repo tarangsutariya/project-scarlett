@@ -279,7 +279,7 @@ Range slider
     <div>
     <label id="cpusl" style="float:inline-start">CPU Cores : (1 - 3)</label>
 
-    <input type="number" id="cpus" autocomplete="off" style="min-width: 200px; max-width: 200px; float: inline-end;" >
+    <input type="number" id="cpus" onchange="inputcpu()" autocomplete="off" style="min-width: 200px; max-width: 200px; float: inline-end;" >
   </div>
 
 
@@ -520,7 +520,13 @@ if(disks.value=="TB" && (details["svrs"][curr]["av_disk"]/1024).toFixed(2)<diski
 
 function inputcpu(){
 let cpus = document.getElementById("cpus")
-if(cpus.value>details)
+cpus.value=parseInt(cpus.value)
+if(cpus.value<details["min_cpu"]){
+  cpus.value=details["min_cpu"]
+}else if(cpus.value>details["svrs"][curr]["av_cpu"]){
+  cpus.value=details["svrs"][curr]["av_cpu"]
+}
+
 
 
 
