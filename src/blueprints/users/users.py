@@ -7,6 +7,7 @@ import time
 from config import minimum_ram,minimum_disk,minimum_cpu,domains
 from blueprints.deployement.countries import random_words
 import random
+from blueprints.deployement.models import deployments
 users_bp = Blueprint("users",__name__,template_folder="templates",static_folder="static")
 
 ######DANGER DELETE THIS##
@@ -197,7 +198,28 @@ def configuredeployment():
     return render_template("configure_new_deploy.html",details=dep_details)
 
 
-    
+@users_bp.route("/config/ava/<subdomain>")
+@user_login_required
+def verifysubav(subdomain):
+    try:
+        subsplit = subdomain.rsplit(".",2)
+        curr_domain = subsplit[-2]+'.'+subsplit[-1]
+    except:
+        return "something went wrong"
+    if curr_domain not in domains:
+        return "something went wrong"
+    new_domain = subdomain
+    while deployments.query.filter_by(primary_domain=new_domain).first()!=None:
+        new_domain=random_words[random.randint(0,999)]+'-'+new_domain
+    while deployments.query.filter_by(secondary_domain=new_domain).first()!=None:
+        new_domain=random_words[random.randint(0,999)]+'-'+new_domain
+    if subdomain==new_domain:
+        return "OK"
+    else:
+        return new_domain
+
+        
+
 
 
 
@@ -205,6 +227,7 @@ def configuredeployment():
 
 
 @users_bp.route("/logout")
+@user_login_required
 def logoutuser():
     if "user_userid" in session:
         session.pop("user_userid")

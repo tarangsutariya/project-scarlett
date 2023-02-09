@@ -288,7 +288,7 @@ Range slider
     <label id="raml" style="float:inline-start">Ram : (128 MB - 4 GB)</label>
     <div style="float: inline-end; max-width: 320px; min-width: 320px;">
       <input type="number" autocomplete="off" id="rami" onchange="inputram()" style="min-width: 200px; max-width: 200px; float: inline-start;" >
-    <select id="rams" autocomplete="off" style="min-width: 120px; max-width: 120px;float: inline-end;"">
+    <select id="rams" autocomplete="off" onchange="selectram()" style="min-width: 120px; max-width: 120px;float: inline-end;"">
       <option value="MB">MB</option>
       <option value="GB">GB</option>
     </select>
@@ -301,7 +301,7 @@ Range slider
     <label id="diskl" style="float:inline-start">Disk : (20 GB - 80 GB)</label>
     <div style="float: inline-end; max-width: 320px; min-width: 320px;">
       <input type="number" autocomplete="off" id="diski" onchange="inputdisk()" style="min-width: 200px; max-width: 200px; float: inline-start;"  step="1">
-    <select id="disks" autocomplete="off" style="min-width: 120px; max-width: 120px;float: inline-end;"">
+    <select id="disks" autocomplete="off" onchange="selectdisk()" style="min-width: 120px; max-width: 120px;float: inline-end;"">
       <option value="GB">GB</option>
       <option value="TB">TB</option>
     </select>
@@ -311,7 +311,7 @@ Range slider
   <br/><br/><br/>
 <label>Subdomain : </label>
 <div>
-<input type="text" style="width: 80%; float: inline-start;">
+<input type="text" id="subdomainval" autocomplete="off" onchange="verifydomainav()" style="width: 80%; float: inline-start;">
 <select id="subdomain" autocomplete="off" style="width: 20%; float: inline-end;">
             {% for domain in details["domains"]%}
         <option value="{{domain}}">{{domain}}</option>
@@ -320,15 +320,15 @@ Range slider
 </div>
 
 <br/><br/><br/>
-<a >[show advanced option]</a>
+<a style="cursor: pointer;" onclick="togadv()" id="toga">[show advanced options]</a>
 <!--ADVANCED OPTIONS-->
-<div>
+<div id="advancedoptions" style="display: none;">
 
 <label>On changes :</label>
 <select autocomplete="off">
-  <option> Hot Reload </option>
-  <option> Rebuild </option>
-  <option> Redeploy </option>
+  <option value="hotreload"> Hot Reload </option>
+  <option value="rebuild"> Rebuild </option>
+  <option value="redeploy"> Redeploy </option>
 </select>
 <br/>
 
@@ -488,14 +488,21 @@ if(rams.value=="MB"){
 rami.value=parseInt(rami.value)
 if(rami.value>details["svrs"][curr]["av_ram"]){
   rami.value=details["svrs"][curr]["av_ram"]
+}else if(rami.value<details["min_ram"]){
+  rami.value=details["min_ram"]
 }
 
 }
 
-if(rams.value=="GB" && (details["svrs"][curr]["av_ram"]/1024).toFixed(2)<rami.value){
-  rami.value=(details["svrs"][curr]["av_ram"]/1024).toFixed(2)
+if(rams.value=="GB"){
+  rami.value=parseFloat(rami.value).toFixed(3)
+if((details["svrs"][curr]["av_ram"]/1024).toFixed(3)<rami.value){
+  rami.value=(details["svrs"][curr]["av_ram"]/1024).toFixed(3)
 }
-
+if(rami.value<(details["min_ram"]/1024).toFixed(3)){
+  rami.value=(details["min_ram"]/1024).toFixed(3)
+}
+}
 
 }
 
@@ -503,17 +510,24 @@ function inputdisk(){
 let diski = document.getElementById("diski")
 let disks = document.getElementById("disks")
 if(disks.value=="GB"){
-diski.value=parseInt(diski.value)
+diski.value=parseFloat(diski.value).toFixed(1)
 if(diski.value>details["svrs"][curr]["av_disk"]){
   diski.value=details["svrs"][curr]["av_disk"]
+}else if(diski.value<details["min_disk"]){
+  diski.value=details["min_disk"]
 }
 
 }
+if(disks.value=="TB"){
+  diski.value=parseFloat(diski.value).toFixed(4)
+if((details["svrs"][curr]["av_disk"]/1024).toFixed(4)<diski.value){
+  diski.value=(details["svrs"][curr]["av_disk"]/1024).toFixed(4)
+}else if(diski.value<details["min_disk"]/1024){
+diski.value=(details["min_disk"]/1024).toFixed(4)
 
-if(disks.value=="TB" && (details["svrs"][curr]["av_disk"]/1024).toFixed(2)<diski.value){
-  diski.value=(details["svrs"][curr]["av_disk"]/1024).toFixed(2)
+
 }
-
+}
 
 }
 
@@ -527,9 +541,87 @@ if(cpus.value<details["min_cpu"]){
   cpus.value=details["svrs"][curr]["av_cpu"]
 }
 
+}
+
+function selectram(){
+
+  let rams = document.getElementById("rams")
+  let rami = document.getElementById("rami")
+  if(rams.value=="MB"){
+    rami.value=parseInt(parseFloat(rami.value)*1024)
+  }else if(rams.value=="GB"){
+    rami.value=(parseInt(rami.value)/1024).toFixed(3)
+  }
 
 
+}
 
+function selectdisk(){
+
+let disks = document.getElementById("disks")
+let diski = document.getElementById("diski")
+if(disks.value=="GB"){
+  diski.value=(parseFloat(diski.value)*1024).toFixed(1)
+}else if(disks.value=="TB"){
+  diski.value=(parseFloat(diski.value)/1024).toFixed(4)
+}
+
+
+}
+
+function subvalid(str) {
+  var code, i, len;
+
+  for (i = 0, len = str.length; i < len; i++) {
+    code = str.charCodeAt(i);
+    if ((!(code > 47 && code < 58) && // numeric (0-9)
+        !(code > 64 && code < 91) && // upper alpha (A-Z)
+        !(code > 96 && code < 123)) && !(code==45)) { // lower alpha (a-z)
+      return false;
+    }
+  }
+  return true;
+}
+
+
+async function verifydomainav(){
+
+let inp = document.getElementById("subdomainval")
+let selsub = document.getElementById("subdomain")
+
+if(inp.value==""){
+
+  return
+}
+inp.value=inp.value.toLowerCase()
+if(!subvalid(inp.value)){
+  inp.value=""
+  inp.placeholder="can only container a-z ,1-9 and -"
+  return
+}
+let response = await fetch('./ava/'+inp.value+'.'+selsub.value)
+let restext = await response.text()
+if(restext=="something went wrong"){
+  inp.value=""
+}else if(restext=="OK"){
+ return;
+}else{
+  inp.value=restext
+}
+
+
+}
+
+
+function togadv(){
+  let tog = document.getElementById("toga")
+  if(tog.innerText=="[show advanced options]"){
+    document.getElementById("advancedoptions").style.display=""
+    tog.innerText="[hide advanced options]"
+  }else{
+    document.getElementById("advancedoptions").style.display="None"
+    tog.innerText="[show advanced options]"
+  }
 }
 
 
