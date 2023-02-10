@@ -6,6 +6,8 @@ class deployments(db.Model):
     repo_id = db.Column(db.Integer)
     repo_name = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
+    accessed_by_org_token = db.Column(db.Boolean)
+    org_token_id = db.Column(db.String)
     accessed_by_custom_token = db.Column(db.Boolean)
     custom_token = db.Column(db.String)
     repo_owner_id = db.Column(db.Integer)
@@ -30,6 +32,7 @@ class deployments(db.Model):
     tap_device = db.Column(db.String)
     redeploy_process = db.Column(db.String)
     env_variables = db.Column(db.JSON)
+    containers = db.Column(db.JSON)
 
 
 class deployement_ports(db.Model):

@@ -236,7 +236,7 @@ Range slider
           <label> Branch to deploy : </label>
 
 
-          <select autocomplete="off">   
+          <select id="branch" autocomplete="off">   
            {% for branch in details["branches"] %}
            <option value="{{branch}}">{{branch}}</option>
                {% endfor %}
@@ -314,7 +314,7 @@ Range slider
 <label>Subdomain : </label>
 <div>
 <input type="text" id="subdomainval" autocomplete="off" onchange="verifydomainav()" style="width: 80%; float: inline-start;">
-<select id="subdomain" autocomplete="off" style="width: 20%; float: inline-end;">
+<select id="subdomain" onchange="verifydomainav()" autocomplete="off" style="width: 20%; float: inline-end;">
             {% for domain in details["domains"]%}
         <option value="{{domain}}">{{domain}}</option>
             {% endfor %}
@@ -327,7 +327,7 @@ Range slider
 <div id="advancedoptions" style="display: none;">
 
 <label>On changes :</label>
-<select autocomplete="off">
+<select id="reloadtype" autocomplete="off">
   <option value="hotreload"> Hot Reload </option>
   <option value="rebuild"> Rebuild </option>
   <option value="redeploy"> Redeploy </option>
@@ -378,9 +378,9 @@ Range slider
 <!--ADVANCED-->
 <br/><br/><br/>
 
+<p id="submissionerror" style="color: red;display: none;">   Are you sure   </p>
 
-
-<button>Deploy</button>
+<button onclick="subdeploy()">Deploy</button>
 
 <br/><br/><br/>
 <br/><br/><br/>
@@ -708,6 +708,93 @@ envvars[envind][1]=env2.value
 renderenv()
 toggleModal(event)
 }
+
+
+async function subdeploy(){
+  await new Promise(r => setTimeout(r,200));
+let submissionerror = document.getElementById("submissionerror")
+submissionerror.innerText=""
+submissionerror.style.display="none"
+
+let server_id =details["svrs"][curr]["server_id"]
+let cpucores = document.getElementById("cpus").value
+if(cpucores==""){
+  submissionerror.innerText="Specify cpu core count"
+  submissionerror.style.display=""
+  return
+}
+cpucores=parseInt(cpucores)
+let ramsize = document.getElementById("rami").value
+if(ramsize==""){
+  submissionerror.innerText="Specify ram size"
+  submissionerror.style.display=""
+  return
+}
+if(document.getElementById("rams").value=='MB'){
+  ramsize=parseInt(ramsize)
+}else{
+  ramsize=parseInt(parseFloat(ramsize)*1024)
+}
+
+let disksize = document.getElementById("diski").value
+if(disksize==""){
+  submissionerror.innerText="Specify disk size"
+  submissionerror.style.display=""
+  return
+}
+if(document.getElementById("disks").value=='GB'){
+  disksize=parseFloat(disksize).toFixed(1)
+}else{
+  disksize=parseFloat(parseFloat(disksize)*1024).toFixed(1)
+}
+
+let subdom = document.getElementById("subdomainval").value
+if(subdom==""){
+  submissionerror.innerText="Subdomain cannot be empty"
+  submissionerror.style.display=""
+  return
+}
+
+subdom=subdom+'.'+document.getElementById("subdomain").value
+let reloadtype = document.getElementById("reloadtype").value
+
+let branch = document.getElementById("branch").value
+
+const queryString = window.location.search; 
+const urlParams = new URLSearchParams(queryString); 
+let repo_id = urlParams.get("id") 
+let token=urlParams.get("token")
+let org=urlParams.get("org")
+let res = await fetch('./createnew', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({"repo_id":repo_id,"org":org,"token":token,"branch":branch ,"server_id": server_id,"subdomain":subdom,"reloadtype":reloadtype,
+      "disksize":disksize,"ramsize":ramsize,"cpucores":cpucores,"env_variables":envvars
+    
+    })
+    });
+
+let restext = await res.text()
+console.log(restext)
+if(restext=="notok"){
+  location.reload(); 
+}else{
+  location.replace("/deployment/"+restext)
+}
+
+}
+
+
+
+
+
+
+
+
+
 
 </script>
 

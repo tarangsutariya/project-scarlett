@@ -198,6 +198,18 @@ def configuredeployment():
     return render_template("configure_new_deploy.html",details=dep_details)
 
 
+
+@users_bp.route("/config/createnew",methods=["POST"])
+@user_login_required
+def create_new_deploy():
+    print(request.json)
+    return "1"
+
+
+
+
+
+
 @users_bp.route("/config/ava/<subdomain>")
 @user_login_required
 def verifysubav(subdomain):
