@@ -186,7 +186,9 @@ Range slider
 
   
 </style>
-
+<script src="../static/js/modal.js">
+   
+</script>
 
   </head>
 
@@ -334,15 +336,15 @@ Range slider
 
 <label>Environment Variables</label><br/>
 <div>
-<input autocomplete="off" style="float: inline-start;width: 48%; margin-right: 2%;"><input autocomplete="off" style="float: inline-end;width: 48%; ">
+<input autocomplete="off" id="envname" style="float: inline-start;width: 48%; margin-right: 2%;"><input id="envvalue" autocomplete="off" style="float: inline-end;width: 48%; ">
 
 </div>
-<a href="#" role="button" class="outline" style="float: inline-end;">Add</a>
+<a  onclick="addenv()"   class="outline" style="float: inline-end;">Add</a>
 <!--ENVIRONMENT VARIABBLE -->
 <br/><br/><br/>
 <div>
 
-<table role="grid">
+<table role="grid" >
   <thead>
     <th>
       Variable name
@@ -352,18 +354,21 @@ Range slider
    
     </th>
   </thead>
+<tbody id="envtab">
 
-  <tr>
+  <!-- <tr>
  <td>
   VARIABLE!
  </td>
  <td>
-  <a href="#" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
+  <a href="#" onclick="event.preventDefault();console.log(123)" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
   <a href="#" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 9px;padding-left: 10px;padding-right: 10px;">Edit</a>
   <a href="#" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 10px;padding-left: 10px;padding-right: 10px;">View</a>
  </td>
   
-  </tr>
+  </tr> -->
+
+</tbody>
 </table>
 
 
@@ -406,9 +411,9 @@ Range slider
 <script>
 
 let curr= 0
-
+let envvars = []
 let details = {{details|tojson}}
-
+let envind = 0
 
 function renderconf(i){
 curr=i
@@ -625,18 +630,127 @@ function togadv(){
 }
 
 
+
+
+
+function renderenv(){
+let tb = document.getElementById("envtab")
+let nr=tb.rows.length
+for(i=0;i<nr;i++){
+  tb.deleteRow(i)
+}
+for(i=0;i<envvars.length;i++){
+let ro = document.createElement("tr")
+ro.innerHTML=` <td>
+  ${envvars[i][0]}
+ </td>
+ <td>
+  <a href="#" onclick="event.preventDefault();delenv(${i})" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
+  <a href="#" onclick="event.preventDefault();envind=${i};document.getElementById('modalerror').style.display='none';renview(${i});toggleModal(event)" data-target="modal-viewenv" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 10px;padding-left: 10px;padding-right: 10px;">View</a>
+ </td>`
+ tb.appendChild(ro)
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+function addenv(){
+let envn = document.getElementById("envname")
+let envv = document.getElementById("envvalue")
+
+if(envn.value=="" || envv.value==""){
+  envn.placeholder="environment variable name"
+  envv.placeholder="environment variable value"
+  return
+}
+
+envvar=[envn.value,envv.value]
+envvars.push(envvar)
+envn.value=""
+envv.value=""
+renderenv()
+
+}
+
+
+function delenv(i){
+envvars.splice(i,1)
+renderenv()
+
+}
+
+function renview(i){
+
+  document.getElementById("env1").value=envvars[i][0]
+  document.getElementById("env2").value=envvars[i][1]
+  return;
+}
+
+function savenv(event){
+let modalerror = document.getElementById("modalerror")
+modalerror.style.display="none"
+let env1 = document.getElementById("env1")
+let env2 = document.getElementById("env2")
+if(env1.value=="" || env2.value==""){
+  modalerror.style.display=""
+  return
+}
+envvars[envind][0]=env1.value
+envvars[envind][1]=env2.value
+renderenv()
+toggleModal(event)
+}
+
 </script>
 
 
 
 
+<!--MODALS-->
+
+<dialog id="modal-viewenv">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-viewenv"
+      onClick="event.preventDefault();toggleModal(event)">
+    </a>
+    <h3>Environment Variable</h3>
+    <p>
+   <input id="env1">
+   <input id="env2">
+
+    </p>
+    <p id="modalerror" style="display: none; color: red;">Values cannot be empty</p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-viewenv"
+        onClick="event.preventDefault();toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-viewenv"
+        onClick="event.preventDefault();savenv(event)">
+        Save
+      </a>
+    </footer>
+  </article>
+</dialog>
 
 
-
-
-
-
-
+<!--MODALS-->
 
   </body>
 
