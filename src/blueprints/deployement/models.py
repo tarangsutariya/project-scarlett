@@ -4,7 +4,7 @@ from models import db
 class deployments(db.Model):
     deploy_id = db.Column(db.Integer,primary_key = True)
     repo_id = db.Column(db.Integer)
-    repo_name = db.Column(db.Integer)
+    repo_name = db.Column(db.String)
     user_id = db.Column(db.Integer)
     accessed_by_org_token = db.Column(db.Boolean)
     org_token_id = db.Column(db.String)
