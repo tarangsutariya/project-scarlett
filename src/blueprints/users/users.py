@@ -202,7 +202,63 @@ def configuredeployment():
 @users_bp.route("/config/createnew",methods=["POST"])
 @user_login_required
 def create_new_deploy():
-    print(request.json)
+    try:
+        usr = users.query.filter_by(user_id=session["user_userid"]).first()
+        repo_id = request.json["repo_id"]
+        org = request.json["org"]
+
+        dep = deployments()
+        p_token = request.json["token"]
+        github_token = None
+        if org != None:
+            orgg =  admin_token_orgs.query.filter_by(org_id=org).first()
+            tkn = admin_github_tokens.query.filter_by(token_id=orgg.token_id).first()
+            dep.accessed_by_org_token=True
+            dep.org_token_id = tkn.token_id
+            github_token = tkn.github_token
+            dep.accessed_by_custom_token=False
+        elif p_token!=None:
+            dep.accessed_by_org_token=False
+            dep.accessed_by_custom_token=True
+            dep.custom_token=p_token
+            github_token=p_token
+        else:
+            dep.accessed_by_custom_token=False
+            dep.accessed_by_org_token=False
+            github_token=usr.github_oauth_token
+        g = Github(github_token)
+        r = g.get_repo(repo_id)
+        dep.repo_id = repo_id
+        dep.repo_owner=r.owner.login
+        dep.repo_owner_id=r.owner.id
+        dep.server_id=request.json["server_id"]
+        dep.repo_name=r.name
+        dep.branch_name = request.json["branch"]
+        dep.primary_domain=request.json["subdomain"]
+        dep.secondary_domain=random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
+        dep.initial_deploy=True
+        envs = {}
+        for v in request.json["env_variables"]:
+            envs[v[0]]=v[1]
+        dep.env_variables = envs
+        dep.redeploy_process=request.json["reloadtype"]
+        dep.cpu_allocated=request.json["cpucores"]
+        dep.ram_allocated=request.json["ramsize"]
+        dep.disk_allocated=request.json["disksize"]
+        dep.user_id=usr.user_id
+        db.session.add(dep)
+        db.session.commit()
+        return str(dep.deploy_id)
+
+
+
+            
+
+
+    except:
+        return "notok"
+
+    
     return "1"
 
 
