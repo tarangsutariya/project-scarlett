@@ -261,8 +261,13 @@ def create_new_deploy():
 @users_bp.route("/c")
 def celerytest():
     from tasks.remote_tasks import initdeloy
-    initdeloy.delay(1,queue="de")
+    c_id = str(initdeloy.apply_async(args=[1],queue="de"))
+    return c_id
 
+@users_bp.route("/p/<id>")
+def celeryresult(id):
+    from tasks.remote_tasks import celery
+    return str(celery.AsyncResult(id).state)
 
 
 

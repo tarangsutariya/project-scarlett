@@ -25,8 +25,9 @@ def reportstats():
     db.session.commit()
 
 
-@celery.task
-def initdeloy(deploy_id):
+@celery.task(bind=True)
+def initdeloy(self,deploy_id):
+    self.update_state(state='PROGRESS', meta={'current': 10, 'total': 24})
     logger.info("RECIEVED CELERY TASK")
 
     
