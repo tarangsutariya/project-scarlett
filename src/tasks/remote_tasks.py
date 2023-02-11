@@ -25,7 +25,9 @@ def reportstats():
     db.session.commit()
 
 
-    
+@celery.task
+def initdeloy(deploy_id):
+    logger.info("RECIEVED CELERY TASK")
 
     
     
