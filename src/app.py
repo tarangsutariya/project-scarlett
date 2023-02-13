@@ -13,7 +13,7 @@ from config import secret_key,postgres_uri,redis_uri
 from models import db
 from blueprints.auth.auth import oauth
 from authlib.integrations.flask_client import OAuth
-
+from blueprints.deployement.deploy import deploy_bp
 
 
 
@@ -67,6 +67,7 @@ def create_app():
     app.register_blueprint(admin_bp,url_prefix="/admin")
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(deploy_bp,url_prefix="/deployment")
     app.register_blueprint(users_bp,url_prefix="/dashboard")
     return app
 

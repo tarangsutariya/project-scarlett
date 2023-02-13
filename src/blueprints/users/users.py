@@ -236,7 +236,10 @@ def create_new_deploy():
         dep.repo_name=r.name
         dep.branch_name = request.json["branch"]
         dep.primary_domain=request.json["subdomain"]
-        dep.secondary_domain=random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
+        secondary_domain = random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
+        while deployments.query.filter_by(secondary_domain=secondary_domain).first()!=None:
+            secondary_domain=random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
+        dep.secondary_domain=secondary_domain
         dep.initial_deploy=True
         envs = {}
         for v in request.json["env_variables"]:
@@ -249,6 +252,11 @@ def create_new_deploy():
         dep.user_id=usr.user_id
         db.session.add(dep)
         db.session.commit()
+        from tasks.remote_tasks import initdeloy
+        ser_prefix = admin_servers.query.filter_by(server_id=dep.server_id).first().server_location_code
+        dep.celery_process_id=str(initdeloy.apply_async(args=[dep.deploy_id]),queue=ser_prefix)
+        db.session.commit()
+
 
 
         return str(dep.deploy_id)
@@ -267,7 +275,9 @@ def celerytest():
 @users_bp.route("/p/<id>")
 def celeryresult(id):
     from tasks.remote_tasks import celery
-    return str(celery.AsyncResult(id).state)
+    return str(celery.AsyncResult(id).info)
+    return str(celery.AsyncResult(id).successful())
+    return str(celery.AsyncResult(id).faileds)
 
 
 

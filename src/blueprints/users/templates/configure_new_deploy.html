@@ -779,11 +779,11 @@ let res = await fetch('./createnew', {
 
 let restext = await res.text()
 console.log(restext)
-// if(restext=="notok"){
-//   location.reload(); 
-// }else{
-//   location.replace("/deployment/"+restext)
-// }
+if(restext=="notok"){
+  location.reload(); 
+}else{
+  location.replace("/deployment/"+restext)
+}
 
 }
 
