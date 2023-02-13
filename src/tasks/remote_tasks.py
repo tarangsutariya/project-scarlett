@@ -27,8 +27,38 @@ def reportstats():
 
 @celery.task(bind=True)
 def initdeloy(self,deploy_id):
-    self.update_state(state='PROGRESS', meta={'current': 10, 'total': 24})
-    time.sleep(200)
+    def initdeloy(self,deploy_id):
+    self.update_state(state='PENDING', meta={'curr': 1, 'total': 9,"message":"message 1"})
+    time.sleep(7)
+    logger.info("1")
+    self.update_state(state='PENDING', meta={'curr': 2, 'total': 9,"message":"message 2"})
+    time.sleep(7)
+    self.update_state(state='PENDING', meta={'curr': 3, 'total': 9,"message":"message 3"})
+    time.sleep(7)
+    logger.info("3")
+    self.update_state(state='PENDING', meta={'curr': 4, 'total': 9,"message":"message 4"})
+    time.sleep(7)
+    self.update_state(state='PENDING', meta={'curr': 5, 'total': 9,"message":"message 5"})
+    time.sleep(7)
+    self.update_state(state='PENDING', meta={'curr': 6, 'total': 9,"message":"message 6"})
+    time.sleep(7)
+    self.update_state(state='PENDING', meta={'curr': 7, 'total': 9,"message":"message 7"})
+    time.sleep(7)
+    self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"message 8"})
+    time.sleep(7)
+    self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"message 9"})
+    logger.info("DONE")
+
+
+# verifying deployment
+# preparing rootfs
+# copying rootfs and kernel image
+# starting firecracker vm
+# git cloning
+# running docker compose up(this may take some time)
+# configuring network rules
+# clean up
+# Done redirecting
     logger.info("RECIEVED CELERY TASK")
 
     

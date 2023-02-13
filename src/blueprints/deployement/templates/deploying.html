@@ -1,10 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard</title>
+    <title>Deploying...</title>
     <meta name="description" content="login to admin pannel.">
    
 
@@ -14,65 +14,12 @@
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
 
     <!-- Custom styles for this example -->
-    <link rel="stylesheet" href="./static/custom.css"> 
 
 
-<script>
-async function printwidth(){
-  while(true){
-    await new Promise(r => setTimeout(r, 500));
-    document.getElementById("he").innerText=window.innerWidth
 
-  }
-}
-printwidth()
-</script>
     
 
-<style>
-  @media(min-width : 640px){
-.uul {
-  list-style-type: none;
-  position: fixed;
-  width: 25%;
 
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: auto;
-}
-
-#contentblock{
-  margin-left:25%;
-  padding:1px 16px;
-  height:1000px;
-}
-  }
-@media(max-width : 640px) { 
-.uul{
-    float: left;
-  display: block;
-  color: #f2f2f2;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-  font-size: 17px;
-  
-}
-.lii{
-    display: inline;
-    margin: 2px;
-}
-
-#contentblock{
- 
-  padding:1px 16px;
-  height:1000px;
-}
-
-
- }
-</style>
 
   </head>
 
@@ -81,7 +28,7 @@ printwidth()
     <!-- Nav -->
     <nav class="container-fluid">
       <ul>
-        <li><a href="./" class="contrast" ><strong>Project Scarlett</strong></a></li>
+        <li><a href="../dashboard" class="contrast" ><strong>Project Scarlett</strong></a></li>
       
       </ul>
       <ul>
@@ -99,7 +46,7 @@ printwidth()
       
         <li>
             <details role="list" dir="rtl">
-              <summary aria-haspopup="listbox" role="link" class="secondary">tarangsutariya</summary>
+              <summary aria-haspopup="listbox" role="link" class="secondary">{{session["user_githubusername"]}}</summary>
               <ul role="listbox">
                
                 <li><a href="./settings">Settings</a></li>
@@ -115,34 +62,47 @@ printwidth()
     <!-- Main -->
     
     <main class="container">
-        <ul class="uul">
-            <li class="lii"><a class="secondary" href="#home">Home</a></li>
-            <li class="lii"><a href="#news">News</a></li>
-            <li class="lii"><a href="#contact">Contact</a></li>
-            <li class="lii"><a href="#about">About</a></li>
-
-            <li class="lii"><a href="#contact">Contact</a></li>
-            <li class="lii"><a href="#about">About</a></li>
-            <li class="lii"><a href="#contact">Contact</a></li>
-            <li class="lii"><a href="#about">About</a></li>
-          </ul>
-          
-          <div id="contentblock">
-
-            <!-- <div style="padding:1px 16px;height:1000px;"> -->
-            <h2 id="he">Fixed Full-height Side Nav</h2>
-
-
-            
-            
-         <label>Username</label>
-         <input type="text">
-          </div>
-
+        <h3>Deployment in progress</h3>
+        <progress id="prg" value="{{info['curr']}}" max="{{info['total']}}"></progress>
+        <p style="float: right;" id="stepscomp"> {{info['curr']}}/{{info['total']}} steps completed</p>
+        <p aria-busy="true" id="process" >{{info['message']}}</p>
     </main><!-- ./ Main -->
 
 
+<script>
+let dep = {{dep.deploy_id}}
+let curr = {{info['curr']}};
+let total = {{info['total']}};
+let message = "{{info['message']}}"
 
+let waitt=1
+
+
+async function longpoll(){
+    while(true){
+    if (total == curr){
+        location.reload()
+    } 
+    await new Promise(r => setTimeout(r, waitt*1000));
+    let response = await fetch(String(dep)+'/initdeploystatus/'+String(curr))
+    rj = await response.json()
+    if(rj.curr>curr){
+            curr=rj.curr;
+            message=rj.message
+            total=rj.total
+            document.getElementById("process").innerText=message
+            document.getElementById("prg").value=curr
+            document.getElementById("prg").max=total
+            document.getElementById("stepscomp").innerText=String(curr)+'/'+String(total)+' steps completed'
+    }
+
+    }
+
+
+}
+
+longpoll()
+</script>
 
     <!-- Footer -->
     <!-- <footer class="container-fluid">
@@ -153,7 +113,7 @@ printwidth()
 
 
     <!-- Minimal theme switcher -->
-    <script src="./static/js/minimal-theme-switcher.js"></script>
+    <script src="/static/js/minimal-theme-switcher.js"></script>
 
   </body>
 

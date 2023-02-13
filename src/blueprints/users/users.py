@@ -253,8 +253,8 @@ def create_new_deploy():
         db.session.add(dep)
         db.session.commit()
         from tasks.remote_tasks import initdeloy
-        ser_prefix = admin_servers.query.filter_by(server_id=dep.server_id).first().server_location_code
-        dep.celery_process_id=str(initdeloy.apply_async(args=[dep.deploy_id]),queue=ser_prefix)
+        ser_prefix = admin_servers.query.filter_by(server_id=dep.server_id).first().domain_prefix
+        dep.celery_process_id=str(initdeloy.apply_async(args=[dep.deploy_id],queue=ser_prefix))
         db.session.commit()
 
 
@@ -266,18 +266,18 @@ def create_new_deploy():
 
     
 
-@users_bp.route("/c")
-def celerytest():
-    from tasks.remote_tasks import initdeloy
-    c_id = str(initdeloy.apply_async(args=[1],queue="de"))
-    return c_id
+# @users_bp.route("/c")
+# def celerytest():
+#     from tasks.remote_tasks import initdeloy
+#     c_id = str(initdeloy.apply_async(args=[1],queue="de"))
+#     return c_id
 
-@users_bp.route("/p/<id>")
-def celeryresult(id):
-    from tasks.remote_tasks import celery
-    return str(celery.AsyncResult(id).info)
-    return str(celery.AsyncResult(id).successful())
-    return str(celery.AsyncResult(id).failed())
+# @users_bp.route("/p/<id>")
+# def celeryresult(id):
+#     from tasks.remote_tasks import celery
+#     return str(celery.AsyncResult(id).info)
+#     return str(celery.AsyncResult(id).successful())
+#     return str(celery.AsyncResult(id).failed())
 
 
 
