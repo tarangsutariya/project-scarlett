@@ -19,6 +19,12 @@ def user_owns_deployment(f):
         deploy=deployments.query.filter_by(deploy_id=deploy_id).first_or_404()
         if session["user_userid"]!=deploy.user_id:
             return redirect(url_for("users.user_dashboard"))
+        if deploy.initial_deploy==True:
+            from tasks.remote_tasks import celery
+            if celery.AsyncResult(id).failed():
+                return "Deployment failed due to some error please try deploying again"
+            elif celery.AsyncResult(id).info!=None:
+                return render_template("deploying.html",dep=deploy)
 
 
         return f(deploy,*args,**kwargs)

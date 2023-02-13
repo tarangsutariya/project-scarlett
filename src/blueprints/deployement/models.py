@@ -37,14 +37,10 @@ class deployments(db.Model):
     redeploy_process = db.Column(db.String)
     env_variables = db.Column(db.JSON)
     containers = db.Column(db.JSON)
+    forwarded_ports = db.Column(db.JSON)
 
 
-class deployement_ports(db.Model):
-    r_id = db.Column(db.Integer,primary_key = True)
-    internal_port = db.Column(db.Integer)
-    protocol = db.Column(db.String)
-    custom_domain = db.Column(db.String)
-    external_port = db.Column(db.Integer)
+
     
 
     

@@ -277,7 +277,7 @@ def celeryresult(id):
     from tasks.remote_tasks import celery
     return str(celery.AsyncResult(id).info)
     return str(celery.AsyncResult(id).successful())
-    return str(celery.AsyncResult(id).faileds)
+    return str(celery.AsyncResult(id).failed())
 
 
 
