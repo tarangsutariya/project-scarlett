@@ -38,6 +38,7 @@ class deployments(db.Model):
     env_variables = db.Column(db.JSON)
     containers = db.Column(db.JSON)
     forwarded_ports = db.Column(db.JSON)
+    firecracker_pid = db.Column(db.Integer)
 
 
 
