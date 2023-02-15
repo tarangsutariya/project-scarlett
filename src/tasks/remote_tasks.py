@@ -15,7 +15,7 @@ celery = make_celery()
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 
-from config import storage_path,rootfs_path,kernel_path
+from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end
 
 logger = get_task_logger(__name__)
 @celery.task
@@ -42,16 +42,39 @@ def initdeloy(self,deploy_id):
         self.update_state(state='FAILURE', meta={'curr': 9, 'total': 9,"message":"Server does not have free resouces to serve this request"})
         raise Ignore()
     ##Preparing rootfs
-    self.update_state(state='PENDING', meta={'curr': 2, 'total': 9,"message":"Preparing rootfs"})
+    self.update_state(state='PENDING', meta={'curr': 2, 'total': 9,"message":"coping rootfs and kernel image"})
+    ###SELECTING TAP DEVICE AND IPRANGE
+    second_octet_start = int(vlan_ip_subnet_start.split(".")[1])+1
+    second_octet_end = int(vlan_ip_subnet_end.split(".")[1])
+    third_octet_start = int(vlan_ip_subnet_start.split(".")[2])+1
+    third_octet_end = int(vlan_ip_subnet_end.split(".")[2])
+    tap_device = "tap"+str(random.randint(second_octet_start,second_octet_end))+"e"+str(random.randint(third_octet_start,third_octet_end))
+    interfacetaken = subprocess.run(['/sbin/ifconfig',tap_device],capture_output=True, text=True)
+    while interfacetaken.returncode==0:
+        tap_device = "tap"+str(random.randint(second_octet_start,second_octet_end))+"e"+str(random.randint(third_octet_start,third_octet_end))
+        interfacetaken = subprocess.run(['/sbin/ifconfig',tap_device],capture_output=True, text=True)
+        
+    tap_ip = vlan_ip_subnet_start.split(".")[0]+"."+tap_device[3:].split('e')[0]+"."+tap_device[3:].split('e')[1]
+    firecracker_ip = tap_ip
+    firecracker_ip+=".2"
+    tap_ip+=".1"
     root_fs_size = int(dep.disk_allocated*1024)
     str_path = os.path.join(storage_path, str(deploy_id))
+    os.mkdir(str_path)
     fs_path = os.path.join(str_path,"rootfs.ext4")
     k_path = os.path.join(str_path,"vmlinux")
     logger.info("COPYING File")
     shutil.copy(rootfs_path, fs_path)
     shutil.copy(kernel_path,k_path)
     subprocess.run(["truncate","-s",str(root_fs_size)+"M",fs_path])
-    subprocess.run(["resize2fs",rootfs_path])
+    #subprocess.run(["/sbin/e2fsck","-f",fs_path])
+    subprocess.run(["/sbin/resize2fs",fs_path])
+    temp_folder = os.path.join("/tmp",tap_device+'d'+str(deploy_id))
+    os.mkdir(temp_folder)
+    subprocess.run(["sudo","mount",fs_path,temp_folder])
+    
+
+    
 
 
      
@@ -93,8 +116,8 @@ def initdeloy(self,deploy_id):
 
 
 # verifying deployment
-# preparing rootfs
-# copying rootfs and kernel image
+# coping rootfs and kernel image
+# preparing network devices
 # starting firecracker vm
 # git cloning
 # running docker compose up(this may take some time)

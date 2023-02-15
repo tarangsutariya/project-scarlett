@@ -261,8 +261,9 @@ def create_new_deploy():
 
         return str(dep.deploy_id)
 
-    except:
-        return "notok"
+    except Exception as e:
+        print(e)
+        return str(e)
 
     
 
