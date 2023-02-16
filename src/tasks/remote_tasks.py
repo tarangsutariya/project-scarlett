@@ -4,8 +4,12 @@ import time
 import subprocess
 import psutil
 import os
+import sys
+import platform
+from subprocess import Popen, PIPE
 import shutil
 import random
+import json
 from blueprints.admin.models import admin_servers
 from blueprints.deployement.models import deployments
 from models import db
@@ -15,7 +19,7 @@ celery = make_celery()
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 
-from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end
+from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid
 
 logger = get_task_logger(__name__)
 @celery.task
@@ -72,24 +76,83 @@ def initdeloy(self,deploy_id):
     temp_folder = os.path.join("/tmp",tap_device+'d'+str(deploy_id))
     os.mkdir(temp_folder)
     subprocess.run(["sudo","mount",fs_path,temp_folder])
+    subprocess.run(["sudo","chmod","777",os.path.join(temp_folder,"etc/local.d/networkinit.start")])
+    with open(os.path.join(temp_folder,"etc/local.d/networkinit.start"),"w") as networkinitscript:
+        networkinitscript.write("#!/bin/sh\n")
+        networkinitscript.write("ifconfig eth0 up && ip addr add dev eth0 %s/24\n"%(firecracker_ip))
+        networkinitscript.write("ip route add default via %s && echo nameserver 8.8.8.8 > /etc/resolv.conf"%(tap_ip))
+    subprocess.run(["sudo","umount",temp_folder])
+    subprocess.run(["sudo","ip","tuntap","add",tap_device,"mode","tap","user",str(uid),"group",str(gid)])
+    subprocess.run(["sudo","ip","addr","add",tap_ip+"/24","dev",tap_device])
+    subprocess.run(["sudo","ip","link","set",tap_device,"up"])
+    subprocess.run(["sudo","sysctl","net.ipv4.ip_forward=1"])
+    subprocess.run(["sudo","iptables","-t","nat","-A","POSTROUTING","-o",default_network_interface,"-j","MASQUERADE"])
+    subprocess.run(["sudo","iptables","-A","FORWARD","-m","conntrack","--ctstate","RELATED,ESTABLISHED","-j","ACCEPT"])
+    subprocess.run(["sudo","iptables","-A","FORWARD","-i",tap_device,"-o",default_network_interface,"-j","ACCEPT"])
+    os.rmdir(temp_folder)
+
+    self.update_state(state='PENDING', meta={'curr': 3, 'total': 9,"message":"Starting Firecracker"})
+    ##LAUNChING FIRECRACKER PROCESS
+    kwargs = {}
+    if platform.system() == 'Windows':
+      
+        CREATE_NEW_PROCESS_GROUP = 0x00000200  
+        DETACHED_PROCESS = 0x00000008         
+        kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, close_fds=True)  
+    elif sys.version_info < (3, 2): 
+        kwargs.update(preexec_fn=os.setsid)
+    else: 
+        kwargs.update(start_new_session=True)
+    firecracker_socket = "/tmp/firecracker"+tap_device[3:]+".socket"
+    p = Popen(["sudo","firecracker","--api-sock",firecracker_socket], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
+    firecracker_pid = p.pid
     
-
+    logger.info(firecracker_pid)
+    fire_kernel_json = {
+            "kernel_image_path": k_path,
+            "boot_args": "console=ttyS0 reboot=k panic=1 pci=off"
+    }
+    json_dump = json.dumps(fire_kernel_json)
+    with open("/tmp/scarlett_curl.json","w") as f:
+        f.write(json_dump)
+    subprocess.run(["sudo","curl","--unix-socket",firecracker_socket,"-i","-X","PUT","http://localhost/boot-source","-H","'Accept: application/json'","-H","'Content-Type: application/json'","-d","@/tmp/scarlett_curl.json" ] )
+    fire_rootfs_json = {
+        "drive_id": "rootfs",
+        "path_on_host": fs_path,
+        "is_root_device": True,
+        "is_read_only": False
+    }
+    json_dump = json.dumps(fire_rootfs_json)
+    with open("/tmp/scarlett_curl.json","w") as f:
+        f.write(json_dump)
+    subprocess.run(["sudo","curl","--unix-socket",firecracker_socket,"-i","-X","PUT","http://localhost/drives/rootfs","-H","'Accept: application/json'","-H","'Content-Type: application/json'","-d","@/tmp/scarlett_curl.json" ] )
+    fire_network_interface = {
+      "iface_id": "eth0",
+      "guest_mac": ("02:00:00:%02x:%02x:%02x" % (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255))).upper(),
+      "host_dev_name": tap_device
+    }
     
-
-
-     
-
-    
-
-
-    
-
-
-
-
-    self.update_state(state='PENDING', meta={'curr': 3, 'total': 9,"message":"message 3"})
-  
-    logger.info("3")
+    json_dump = json.dumps(fire_network_interface)
+    with open("/tmp/scarlett_curl.json","w") as f:
+        f.write(json_dump)
+    subprocess.run(["sudo","curl","--unix-socket",firecracker_socket,"-i","-X","PUT","http://localhost/network-interfaces/eth0","-H","'Accept: application/json'","-H","'Content-Type: application/json'","-d","@/tmp/scarlett_curl.json" ] )
+    fire_specs_json = {
+      "vcpu_count": dep.cpu_allocated,
+      "mem_size_mib": dep.ram_allocated
+    }
+    json_dump = json.dumps(fire_specs_json)
+    with open("/tmp/scarlett_curl.json","w") as f:
+        f.write(json_dump)
+    subprocess.run(["sudo","curl","--unix-socket",firecracker_socket,"-i","-X","PUT","http://localhost/machine-config","-H","'Accept: application/json'","-H","'Content-Type: application/json'","-d","@/tmp/scarlett_curl.json" ] )
+    fire_action_json = {
+      "action_type": "InstanceStart"
+    }
+    json_dump = json.dumps(fire_action_json)
+    with open("/tmp/scarlett_curl.json","w") as f:
+        f.write(json_dump)
+    subprocess.run(["sudo","curl","--unix-socket",firecracker_socket,"-i","-X","PUT","http://localhost/actions","-H","'Accept: application/json'","-H","'Content-Type: application/json'","-d","@/tmp/scarlett_curl.json" ] )
+    logger.info(firecracker_pid)
+    logger.info(firecracker_ip)
     self.update_state(state='PENDING', meta={'curr': 4, 'total': 9,"message":"message 4"})
    
     self.update_state(state='PENDING', meta={'curr': 5, 'total': 9,"message":"message 5"})
@@ -101,6 +164,7 @@ def initdeloy(self,deploy_id):
     self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"message 8"})
 
     self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"message 9"})
+    logger.info(firecracker_ip)
     logger.info("DONE")
 
 
