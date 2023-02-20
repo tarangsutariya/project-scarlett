@@ -17,13 +17,19 @@ from github import Github
 from fabric import Connection
 from .helpers.caddy_editor import Caddy
 import requests
+import CloudFlare
+
+
 celery = make_celery()
 
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 
 from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path
+from config import cloudflare_api_key
 
+
+cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 logger = get_task_logger(__name__)
 @celery.task
 def reportstats():
@@ -159,6 +165,10 @@ def initdeloy(self,deploy_id):
         f.write(json_dump)
     subprocess.run(["sudo","curl","--unix-socket",firecracker_socket,"-i","-X","PUT","http://localhost/actions","-H","'Accept: application/json'","-H","'Content-Type: application/json'","-d","@/tmp/scarlett_curl.json" ] )
     
+
+    with open("/tmp/env","w+") as envf:
+        for envs in dep.env_variables:
+            envf.write("%s=%s\n"%(str(envs),str(dep.env_variables[envs])))
     logger.info(firecracker_ip)
     self.update_state(state='PENDING', meta={'curr': 5, 'total': 9,"message":"Git cloning"})
     ssh_connect_retries = 0
@@ -172,28 +182,81 @@ def initdeloy(self,deploy_id):
     if ssh_connect_retries>=5:
         raise Exception("SSH CONNECTION TIMED OUT")
     with Connection("root@"+firecracker_ip) as ssh_connection:
-        ssh_connection.run("git clone %s repo"%("https://github.com/ldruid98/flask-example"))
+        ssh_connection.run("git clone %s repo"%("https://github.com/"+dep.repo_owner+"/"+dep.repo_name))
+        ssh_connection.run("cd repo && git checkout %s"%(dep.branch_name))
+        ssh_connection.put("/tmp/env",'repo/.env')
     logger.info("git clone done")
-    self.update_state(state='PENDING', meta={'curr': 6, 'total': 9,"message":"running compose up"})
+    self.update_state(state='PENDING', meta={'curr': 6, 'total': 9,"message":"running docker compose up"})
     with Connection("root@"+firecracker_ip) as ssh_connection:
         ssh_connection.run("cd repo && docker compose up -d")
     
 
     self.update_state(state='PENDING', meta={'curr': 7, 'total': 9,"message":"Configuring network rules"})
+    
+    p_cps = dep.primary_domain.split(".")
+    base_domain_p = p_cps[-2]+"."+ p_cps[-1]
+    prefix_p = ""
+    for i in range(0,len(p_cps)-2):
+        prefix_p+=p_cps[i]
+        prefix_p+='.'
+    prefix_p=prefix_p[:-1]
+
+    s_cps = dep.secondary_domain.split(".")
+    base_domain_s = s_cps[-2]+"."+ s_cps[-1]
+    prefix_s = ""
+    for i in range(0,len(s_cps)-2):
+        prefix_s+=s_cps[i]
+        prefix_s+='.'
+    prefix_s=prefix_s[:-1]
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    zone_id = cf.zones.get(params = {'name':base_domain_p})[0]["id"]
+    cf.zones.dns_records.post(zone_id, data={"name":prefix_p,"type":"A","content":svr.ip_address})
+
+    zone_id = cf.zones.get(params = {'name':base_domain_s})[0]["id"]
+    cf.zones.dns_records.post(zone_id, data={"name":prefix_s,"type":"A","content":svr.ip_address})
     caddy = Caddy(caddy_path)
-    caddy.add("de.tarang.uk",firecracker_ip,80)
+    caddy.add(dep.primary_domain,firecracker_ip,80)
     headers = {
         'Content-Type': 'text/caddyfile',
     }
+    caddy.add(dep.secondary_domain,firecracker_ip,80)
+
 
     with open(caddy_path, 'rb') as f:
         data = f.read()
 
     response = requests.post('http://localhost:2019/load', headers=headers, data=data)
-    logger.info("CADDY DONE"+str(response.status_code))
+    
     
     self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"Performing clean-up"})
+    #####
+    # kwargs = {}
+    # if platform.system() == 'Windows':
+      
+    #     CREATE_NEW_PROCESS_GROUP = 0x00000200  
+    #     DETACHED_PROCESS = 0x00000008         
+    #     kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, close_fds=True)  
+    # elif sys.version_info < (3, 2): 
+    #     kwargs.update(preexec_fn=os.setsid)
+    # else: 
+    #     kwargs.update(start_new_session=True)
+    
+    # p = Popen(["sudo","firecracker","--api-sock",firecracker_socket], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
 
+#####
+    dep.initial_deploy=False
+    dep.deploy_path = str_path
+    dep.health="healthy"
+    dep.last_deployment_status="Deployed"
+    dep.deployment_process_desc="Successfully deployed"
+    dep.tap_device=tap_device
+    dep.interal_ip=firecracker_ip
+    dep.firecracker_ip=firecracker_pid
+    dep.firecracker_socket=firecracker_socket
+    db.session.commit()
+
+    
+    
     self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"Done"})
     logger.info(firecracker_ip)
     logger.info("DONE")
@@ -209,8 +272,9 @@ def initdeloy(self,deploy_id):
 #######
 #Cloudflare
 #cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
-#cf.zones.get(params = {'name':"domain_name"})
-
+#
+###x = datetime.now()-(dt_object+diff)
+###dt_object = datetime.strptime(utc_string, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 # verifying deployment

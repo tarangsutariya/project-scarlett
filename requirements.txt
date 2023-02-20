@@ -9,3 +9,4 @@ psutil
 redis
 psycopg2-binary
 bcrypt
+python-on-whales
