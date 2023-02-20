@@ -13,13 +13,16 @@ import json
 from blueprints.admin.models import admin_servers
 from blueprints.deployement.models import deployments
 from models import db
-
+from github import Github
+from fabric import Connection
+from .helpers.caddy_editor import Caddy
+import requests
 celery = make_celery()
 
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 
-from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid
+from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path
 
 logger = get_task_logger(__name__)
 @celery.task
@@ -82,6 +85,9 @@ def initdeloy(self,deploy_id):
         networkinitscript.write("ifconfig eth0 up && ip addr add dev eth0 %s/24\n"%(firecracker_ip))
         networkinitscript.write("ip route add default via %s && echo nameserver 8.8.8.8 > /etc/resolv.conf"%(tap_ip))
     subprocess.run(["sudo","umount",temp_folder])
+    
+    self.update_state(state='PENDING', meta={'curr': 3, 'total': 9,"message":"Starting Firecracker"})
+
     subprocess.run(["sudo","ip","tuntap","add",tap_device,"mode","tap","user",str(uid),"group",str(gid)])
     subprocess.run(["sudo","ip","addr","add",tap_ip+"/24","dev",tap_device])
     subprocess.run(["sudo","ip","link","set",tap_device,"up"])
@@ -91,7 +97,7 @@ def initdeloy(self,deploy_id):
     subprocess.run(["sudo","iptables","-A","FORWARD","-i",tap_device,"-o",default_network_interface,"-j","ACCEPT"])
     os.rmdir(temp_folder)
 
-    self.update_state(state='PENDING', meta={'curr': 3, 'total': 9,"message":"Starting Firecracker"})
+    self.update_state(state='PENDING', meta={'curr': 4, 'total': 9,"message":"Starting Firecracker"})
     ##LAUNChING FIRECRACKER PROCESS
     kwargs = {}
     if platform.system() == 'Windows':
@@ -105,6 +111,7 @@ def initdeloy(self,deploy_id):
         kwargs.update(start_new_session=True)
     firecracker_socket = "/tmp/firecracker"+tap_device[3:]+".socket"
     p = Popen(["sudo","firecracker","--api-sock",firecracker_socket], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
+    ###########################
     firecracker_pid = p.pid
     
     logger.info(firecracker_pid)
@@ -151,27 +158,54 @@ def initdeloy(self,deploy_id):
     with open("/tmp/scarlett_curl.json","w") as f:
         f.write(json_dump)
     subprocess.run(["sudo","curl","--unix-socket",firecracker_socket,"-i","-X","PUT","http://localhost/actions","-H","'Accept: application/json'","-H","'Content-Type: application/json'","-d","@/tmp/scarlett_curl.json" ] )
-    logger.info(firecracker_pid)
+    
     logger.info(firecracker_ip)
-    self.update_state(state='PENDING', meta={'curr': 4, 'total': 9,"message":"message 4"})
-   
-    self.update_state(state='PENDING', meta={'curr': 5, 'total': 9,"message":"message 5"})
+    self.update_state(state='PENDING', meta={'curr': 5, 'total': 9,"message":"Git cloning"})
+    ssh_connect_retries = 0
+    while ssh_connect_retries < 5:
+        try:
+            Connection("root@"+firecracker_ip,connect_timeout=10).run("hostname")
+            break
+        except:
+            time.sleep(10)
+            ssh_connect_retries+=1
+    if ssh_connect_retries>=5:
+        raise Exception("SSH CONNECTION TIMED OUT")
+    with Connection("root@"+firecracker_ip) as ssh_connection:
+        ssh_connection.run("git clone %s repo"%("https://github.com/ldruid98/flask-example"))
+    logger.info("git clone done")
+    self.update_state(state='PENDING', meta={'curr': 6, 'total': 9,"message":"running compose up"})
+    with Connection("root@"+firecracker_ip) as ssh_connection:
+        ssh_connection.run("cd repo && docker compose up -d")
+    
 
-    self.update_state(state='PENDING', meta={'curr': 6, 'total': 9,"message":"message 6"})
+    self.update_state(state='PENDING', meta={'curr': 7, 'total': 9,"message":"Configuring network rules"})
+    caddy = Caddy(caddy_path)
+    caddy.add("de.tarang.uk",firecracker_ip,80)
+    headers = {
+        'Content-Type': 'text/caddyfile',
+    }
 
-    self.update_state(state='PENDING', meta={'curr': 7, 'total': 9,"message":"message 7"})
+    with open(caddy_path, 'rb') as f:
+        data = f.read()
 
-    self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"message 8"})
+    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
+    logger.info("CADDY DONE"+str(response.status_code))
+    
+    self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"Performing clean-up"})
 
-    self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"message 9"})
+    self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"Done"})
     logger.info(firecracker_ip)
     logger.info("DONE")
 
 
 
 
-
-
+######
+#git clone url foldername
+#git fetch
+#git merge
+#socat TCP4-LISTEN:8111,fork,bind=127.0.0.1 TCP4:10.156.166.2:80
 #######
 #Cloudflare
 #cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
