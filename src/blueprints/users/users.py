@@ -200,6 +200,21 @@ def configuredeployment():
     return render_template("configure_new_deploy.html",details=dep_details)
 
 
+@users_bp.route("/deploy/checkexternal",methods=["POST"])
+@user_login_required
+def checkexternal():
+    repo = request.json["repo"]
+    token = request.json["token"]
+    g = Github(token)
+    try:
+        
+        g.get_repo(repo)
+        return "OK"
+    except:
+        return "NOTOK"
+
+
+
 
 @users_bp.route("/config/createnew",methods=["POST"])
 @user_login_required

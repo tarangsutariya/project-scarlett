@@ -187,7 +187,7 @@ def initdeloy(self,deploy_id):
     elif dep.accessed_by_custom_token == True:
         tokenn = dep.custom_token
     with Connection("root@"+firecracker_ip) as ssh_connection:
-        ssh_connection.run("git clone %s@%s repo"%(tokenn,"https://github.com/"+dep.repo_owner+"/"+dep.repo_name))
+        ssh_connection.run("git clone https://%s@%s repo"%(tokenn,"github.com/"+dep.repo_owner+"/"+dep.repo_name))
         ssh_connection.run("cd repo && git checkout %s"%(dep.branch_name))
         ssh_connection.put("/tmp/env",'repo/.env')
     logger.info("git clone done")

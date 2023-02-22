@@ -40,7 +40,23 @@
 
   </script>
 
+<script>
+  async function checkcustom(){
+let repo=document.getElementById("repo").value
+let token=document.getElementById("token").value
+let res = await fetch('./deploy/checkexternal', {
+  method: 'POST',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({"repo": repo, "token": token})
+});
+ let restext = await res.text()
+console.log(restext)
 
+}
+</script>
 
 
 
@@ -109,11 +125,9 @@
                     <td> 
 
                       <a style="margin-bottom :5px;" href="https://github.com/{{key}}/{{repo[1]}}"> {{key}}/{{repo[1]}} </a>
-                      {% if key == owner[0] %}
+                      
                       <a href="./config/repo?id={{repo[0]}}" role="button" class="outline" style="padding: 4px; float: right;">Deploy</a>
-                      {% else %}
-                      <a href="./config/repo?id={{repo[0]}}" role="button" class="outline" style="padding: 4px; float: right;">Deploy</a>
-                      {% endif %}
+                    
                     </td>
         
                     </tr>
@@ -126,10 +140,10 @@
      
                <div id="addcustom" style="display: none;">
                <label> Enter repo to be imported : </label>
-               <input type="text" placeholder="tarangsutariya/Project-Scarlett">
+               <input type="text" id="repo" placeholder="tarangsutariya/Project-Scarlett" autocomplete="off">
                <label> if the repo is private paste an access token here </label>
-               <input type="text">
-               <button class="outline">Import</button>
+               <input id="token" type="text" autocomplete="off">
+               <button class="outline" onclick="checkcustom()">Import</button>
 
  
 
