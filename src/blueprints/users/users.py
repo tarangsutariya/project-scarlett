@@ -205,11 +205,14 @@ def configuredeployment():
 def checkexternal():
     repo = request.json["repo"]
     token = request.json["token"]
-    g = Github(token)
+    
     try:
-        
-        g.get_repo(repo)
-        return "OK"
+        tkn = users.query.filter_by(user_id=session["user_userid"]).first().github_oauth_token
+        g = Github(tkn)
+        if token!=None and token!="":
+            g = Github(token)
+        repo = g.get_repo(repo)
+        return str(repo.id)
     except:
         return "NOTOK"
 

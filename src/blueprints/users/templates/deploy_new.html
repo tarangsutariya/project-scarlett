@@ -42,8 +42,12 @@
 
 <script>
   async function checkcustom(){
+    document.getElementById("customerror").style.display="none"
 let repo=document.getElementById("repo").value
 let token=document.getElementById("token").value
+if(repo==null || repo==""){
+  document.getElementById("customerror").style.display=""
+}
 let res = await fetch('./deploy/checkexternal', {
   method: 'POST',
   headers: {
@@ -53,7 +57,16 @@ let res = await fetch('./deploy/checkexternal', {
   body: JSON.stringify({"repo": repo, "token": token})
 });
  let restext = await res.text()
-console.log(restext)
+if(restext=="NOTOK"){
+  document.getElementById("customerror").style.display=""
+  return
+}
+if(token==null || token==""){
+location.href = ("./config/repo?id="+restext)
+}else{
+location.href= ("./config/repo?id="+restext+"&token="+token)
+}
+
 
 }
 </script>
@@ -85,7 +98,7 @@ console.log(restext)
       
         <li>
             <details role="list" dir="rtl">
-              <summary aria-haspopup="listbox" role="link" class="secondary">tarangsutariya</summary>
+              <summary aria-haspopup="listbox" role="link" class="secondary">{{session["user_githubusername"]}}</summary>
               <ul role="listbox">
                
                 <li><a href="./settings">Settings</a></li>
@@ -143,6 +156,8 @@ console.log(restext)
                <input type="text" id="repo" placeholder="tarangsutariya/Project-Scarlett" autocomplete="off">
                <label> if the repo is private paste an access token here </label>
                <input id="token" type="text" autocomplete="off">
+
+               <p id="customerror" style="color: red;display: none;">Please enter a valid repo and token</p>
                <button class="outline" onclick="checkcustom()">Import</button>
 
  
