@@ -138,7 +138,8 @@ def configuredeployment():
     repo_id = request.args.get('id')
     github_access_token = request.args.get('token')
     org_needed_to_access = request.args.get("org")
-    g = Github()
+    usr = users.query.filter_by(user_id=session["user_userid"]).first()
+    g = Github(usr.github_oauth_token)
     if org_needed_to_access!=None:
         try:
             org_needed_to_access=int(org_needed_to_access)
@@ -262,8 +263,7 @@ def create_new_deploy():
         return str(dep.deploy_id)
 
     except Exception as e:
-        print(e)
-        return str(e)
+        abort(503)
 
     
 
