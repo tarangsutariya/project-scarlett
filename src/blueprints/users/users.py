@@ -128,6 +128,7 @@ def create_deploy():
         if owner == session["user_githubusername"]:
             continue
         owner_list.append(owner)
+    
     return render_template("deploy_new.html",owners=owner_list,repos=repos)
 
 

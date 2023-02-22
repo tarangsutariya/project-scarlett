@@ -10,16 +10,16 @@ from subprocess import Popen, PIPE
 import shutil
 import random
 import json
-from blueprints.admin.models import admin_servers
+from blueprints.admin.models import admin_servers,admin_github_tokens
 from blueprints.deployement.models import deployments
-from models import db
+from models import db,users
 from github import Github
 from fabric import Connection
 from .helpers.caddy_editor import Caddy
 import requests
 import CloudFlare
-
-
+from .helpers.utils import tryPort
+import python_on_whales
 celery = make_celery()
 
 from celery.utils.log import get_task_logger
@@ -181,8 +181,13 @@ def initdeloy(self,deploy_id):
             ssh_connect_retries+=1
     if ssh_connect_retries>=5:
         raise Exception("SSH CONNECTION TIMED OUT")
+    tokenn = users.query.filter_by(user_id=dep.user_id).first().github_oauth_token
+    if dep.accessed_by_org_token == True:
+        tokenn = admin_github_tokens.query.filter_by(token_id=dep.org_token_id).first().github_token
+    elif dep.accessed_by_custom_token == True:
+        tokenn = dep.custom_token
     with Connection("root@"+firecracker_ip) as ssh_connection:
-        ssh_connection.run("git clone %s repo"%("https://github.com/"+dep.repo_owner+"/"+dep.repo_name))
+        ssh_connection.run("git clone %s@%s repo"%(tokenn,"https://github.com/"+dep.repo_owner+"/"+dep.repo_name))
         ssh_connection.run("cd repo && git checkout %s"%(dep.branch_name))
         ssh_connection.put("/tmp/env",'repo/.env')
     logger.info("git clone done")
@@ -230,19 +235,23 @@ def initdeloy(self,deploy_id):
     
     self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"Performing clean-up"})
     #####
-    # kwargs = {}
-    # if platform.system() == 'Windows':
+    kwargs = {}
+    if platform.system() == 'Windows':
       
-    #     CREATE_NEW_PROCESS_GROUP = 0x00000200  
-    #     DETACHED_PROCESS = 0x00000008         
-    #     kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, close_fds=True)  
-    # elif sys.version_info < (3, 2): 
-    #     kwargs.update(preexec_fn=os.setsid)
-    # else: 
-    #     kwargs.update(start_new_session=True)
-    
-    # p = Popen(["sudo","firecracker","--api-sock",firecracker_socket], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
-
+        CREATE_NEW_PROCESS_GROUP = 0x00000200  
+        DETACHED_PROCESS = 0x00000008         
+        kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, close_fds=True)  
+    elif sys.version_info < (3, 2): 
+        kwargs.update(preexec_fn=os.setsid)
+    else: 
+        kwargs.update(start_new_session=True)
+    socat_port = random.randint(20000,40000)
+    while not tryPort(socat_port):
+            socat_port = random.randint(20000,40000)
+    socat = Popen(["socat","TCP4-LISTEN:%s,fork"%(socat_port),"TCP4:%s:22"%(firecracker_ip)], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
+    socat_pid = socat.pid
+    port_forwarded = {"socat_pid":socat.pid,"port":socat_port,"type":"SSH"}
+    logger.info(socat_port)
 #####
     dep.initial_deploy=False
     dep.deploy_path = str_path
@@ -253,6 +262,13 @@ def initdeloy(self,deploy_id):
     dep.interal_ip=firecracker_ip
     dep.firecracker_ip=firecracker_pid
     dep.firecracker_socket=firecracker_socket
+    dep.forwarded_ports = port_forwarded
+    docker = python_on_whales.DockerClient(host="ssh://root@%s"%(firecracker_ip))
+    containers = list(docker.ps())
+    contn = {}
+    for container in containers:
+        contn[container.id]=container.name[5:-2]
+    dep.containers = contn
     db.session.commit()
 
     

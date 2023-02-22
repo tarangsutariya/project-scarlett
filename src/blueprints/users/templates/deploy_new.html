@@ -109,7 +109,11 @@
                     <td> 
 
                       <a style="margin-bottom :5px;" href="https://github.com/{{key}}/{{repo[1]}}"> {{key}}/{{repo[1]}} </a>
+                      {% if key == owner[0] %}
                       <a href="./config/repo?id={{repo[0]}}" role="button" class="outline" style="padding: 4px; float: right;">Deploy</a>
+                      {% else %}
+                      <a href="./config/repo?id={{repo[0]}}" role="button" class="outline" style="padding: 4px; float: right;">Deploy</a>
+                      {% endif %}
                     </td>
         
                     </tr>
