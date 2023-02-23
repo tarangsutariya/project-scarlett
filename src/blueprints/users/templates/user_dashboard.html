@@ -112,7 +112,7 @@
       
         <li>
             <details role="list" dir="rtl">
-              <summary aria-haspopup="listbox" role="link" class="secondary">tarangsutariya</summary>
+              <summary aria-haspopup="listbox" role="link" class="secondary">{{session["user_githubusername"]}}</summary>
               <ul role="listbox">
                
                 <li><a href="./settings">Settings</a></li>
@@ -129,12 +129,12 @@
     
     <main class="container">
       <div>
-    <input type="search" placeholder="search">
+    <input type="search" autocomplete="off" id="search" onkeyup="searchdep()" placeholder="search">
 </div>
 
 
 
-      <div class="card__wrap--outer">
+      <div class="card__wrap--outer" id="outerr">
         
         <div class="card__wrap--inner" style="cursor: pointer;" onclick="location.href='./deploy';">
           <div class="card" style="text-align: center;">
@@ -157,13 +157,13 @@
 
 
 
-
+        {% for dep in deploys %}
 
          <div class="card__wrap--inner">
-            <div class="card">
+            <div class="card" onclick="redirectt({{dep.deploy_id}})" style="cursor: pointer;">
 
               <div style="max-height: 60px; text-overflow: clip;overflow: hidden;word-wrap: break-word;">
-							<a href="#"><h6>tarangsutariya/project-scarlett-3000</h6></a></div>
+							<a onclick="event.stopImmediatePropagation()" href="https://github.com/{{dep.repo_owner}}/{{dep.repo_name}}" target="_blank"><h6 id="repoo">{{dep.repo_owner}}/{{dep.repo_name}}</h6></a></div>
               <p><span style="
                 display:inline-block;
                 white-space: nowrap;
@@ -171,12 +171,12 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 max-width: 13ch;"><svg width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><title>ionicons-v5-d</title><path d="M416,160a64,64,0,1,0-96.27,55.24c-2.29,29.08-20.08,37-75,48.42-17.76,3.68-35.93,7.45-52.71,13.93V151.39a64,64,0,1,0-64,0V360.61a64,64,0,1,0,64.42.24c2.39-18,16-24.33,65.26-34.52,27.43-5.67,55.78-11.54,79.78-26.95,29-18.58,44.53-46.78,46.36-83.89A64,64,0,0,0,416,160ZM160,64a32,32,0,1,1-32,32A32,32,0,0,1,160,64Zm0,384a32,32,0,1,1,32-32A32,32,0,0,1,160,448ZM352,192a32,32,0,1,1,32-32A32,32,0,0,1,352,192Z"/></svg>
-                 master
+                 {{dep.branch_name}}
                 </span>
-                <span style="position: relative;float: right; margin-top: -2px;">ams1</span>
+                <span style="position: relative;float: right; margin-top: -2px;">{{svrs[dep.server_id]}}</span>
               </p>
            <span><div style="max-width: 80%;max-height: 30px; overflow: hidden;text-overflow: clip;white-space: nowrap; ">
-            <a id="sd" style="font-size: smaller;" href="#">master.project-scarlett.tarang.uk</a>  
+            <a id="sd" onclick="event.stopImmediatePropagation()" style="font-size: smaller;" target="_blank" href="https://{{dep.primary_domain}}" >{{dep.primary_domain}}</a>  
           </div>
 
            <svg style="position: relative; float: right; margin-top: -21px; margin-bottom: 3px;" height="19" width="19" version="1.1" id="Filled_Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
@@ -189,38 +189,38 @@
             </div>
         </div>
 
+{% endfor %}
+          <!-- <div class="card__wrap--inner">
+            <div class="card">
 
-        <div class="card__wrap--inner">
-          <div class="card">
-
-            <div style="max-height: 60px; text-overflow: clip;overflow: hidden;word-wrap: break-word;">
-            <a href="#"><h6>tarangsutariya/project-scarlett-3000</h6></a></div>
-            <p><span style="
-              display:inline-block;
-              white-space: nowrap;
-         
-              overflow: hidden;
-              text-overflow: ellipsis;
-              max-width: 13ch;"><svg width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><title>ionicons-v5-d</title><path d="M416,160a64,64,0,1,0-96.27,55.24c-2.29,29.08-20.08,37-75,48.42-17.76,3.68-35.93,7.45-52.71,13.93V151.39a64,64,0,1,0-64,0V360.61a64,64,0,1,0,64.42.24c2.39-18,16-24.33,65.26-34.52,27.43-5.67,55.78-11.54,79.78-26.95,29-18.58,44.53-46.78,46.36-83.89A64,64,0,0,0,416,160ZM160,64a32,32,0,1,1-32,32A32,32,0,0,1,160,64Zm0,384a32,32,0,1,1,32-32A32,32,0,0,1,160,448ZM352,192a32,32,0,1,1,32-32A32,32,0,0,1,352,192Z"/></svg>
-               master
-              </span>
-              <span style="position: relative;float: right; margin-top: -2px;">ams1</span>
-            </p>
-         <span><div style="max-width: 80%;max-height: 30px; overflow: hidden;text-overflow: clip;white-space: nowrap; ">
-          <a id="sd" style="font-size: smaller;" href="#">master.project-scarlett.tarang.uk</a>  
-        </div>
-
-         <svg style="position: relative; float: right; margin-top: -21px; margin-bottom: 3px;" height="19" width="19" version="1.1" id="Filled_Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
- y="0px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
-<g id="Status-Approved-Filled">
-<path d="M12,0C5.4,0,0,5.4,0,12s5.4,12,12,12s12-5.4,12-12S18.6,0,12,0z M9.5,18.3l-5.6-5.7l1.8-1.8l3.9,3.9l8.4-8.4l1.8,1.8
-  L9.5,18.3z"/>
-</g>
-</svg></span>
+              <div style="max-height: 60px; text-overflow: clip;overflow: hidden;word-wrap: break-word;">
+              <a href="#"><h6>tarangsutariya/project-scarlett-3000</h6></a></div>
+              <p><span style="
+                display:inline-block;
+                white-space: nowrap;
+          
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 13ch;"><svg width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><title>ionicons-v5-d</title><path d="M416,160a64,64,0,1,0-96.27,55.24c-2.29,29.08-20.08,37-75,48.42-17.76,3.68-35.93,7.45-52.71,13.93V151.39a64,64,0,1,0-64,0V360.61a64,64,0,1,0,64.42.24c2.39-18,16-24.33,65.26-34.52,27.43-5.67,55.78-11.54,79.78-26.95,29-18.58,44.53-46.78,46.36-83.89A64,64,0,0,0,416,160ZM160,64a32,32,0,1,1-32,32A32,32,0,0,1,160,64Zm0,384a32,32,0,1,1,32-32A32,32,0,0,1,160,448ZM352,192a32,32,0,1,1,32-32A32,32,0,0,1,352,192Z"/></svg>
+                master
+                </span>
+                <span style="position: relative;float: right; margin-top: -2px;">ams1</span>
+              </p>
+          <span><div style="max-width: 80%;max-height: 30px; overflow: hidden;text-overflow: clip;white-space: nowrap; ">
+            <a id="sd" style="font-size: smaller;" href="#">master.project-scarlett.tarang.uk</a>  
           </div>
-      </div>
 
-      <div class="card__wrap--inner">
+          <svg style="position: relative; float: right; margin-top: -21px; margin-bottom: 3px;" height="19" width="19" version="1.1" id="Filled_Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+  y="0px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
+  <g id="Status-Approved-Filled">
+  <path d="M12,0C5.4,0,0,5.4,0,12s5.4,12,12,12s12-5.4,12-12S18.6,0,12,0z M9.5,18.3l-5.6-5.7l1.8-1.8l3.9,3.9l8.4-8.4l1.8,1.8
+    L9.5,18.3z"/>
+  </g>
+  </svg></span>
+            </div>
+        </div> -->
+
+      <!-- <div class="card__wrap--inner">
         <div class="card">
     
         </div>
@@ -237,7 +237,7 @@
         <div class="card">
            
         </div>
-    </div>
+    </div> -->
     </div>
 
 
@@ -257,6 +257,41 @@
 
     <!-- Minimal theme switcher -->
     <script src="./static/js/minimal-theme-switcher.js"></script>
+
+<script>
+
+function searchdep(){
+  let outer = document.getElementById("outerr")
+  
+let x = 1;
+let tosearch = document.getElementById("search").value
+for (const child of outer.children) {
+  if(x==1){
+    x+=1;
+    continue
+  }
+  child.style.display=""
+  let repoo = child.childNodes[1].childNodes[1].childNodes[1].innerText
+  let domainn = child.querySelector('#'+"sd").innerText;
+  
+  if(repoo.match(tosearch)==null && domainn.match(tosearch)==null ){
+    child.style.display="none"
+  }
+
+
+
+}
+}
+
+function redirectt(id){
+
+location.href="../deployment/"+String(id)
+
+
+}
+</script>
+
+
 
   </body>
 

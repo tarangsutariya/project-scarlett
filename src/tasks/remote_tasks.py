@@ -250,7 +250,7 @@ def initdeloy(self,deploy_id):
             socat_port = random.randint(20000,40000)
     socat = Popen(["socat","TCP4-LISTEN:%s,fork"%(socat_port),"TCP4:%s:22"%(firecracker_ip)], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
     socat_pid = socat.pid
-    port_forwarded = {"socat_pid":socat.pid,"port":socat_port,"type":"SSH"}
+    port_forwarded = {"socat_pid":socat.pid,"external_port":socat_port,"type":"SSH","internal_port":22}
     logger.info(socat_port)
 #####
     dep.initial_deploy=False
@@ -277,7 +277,21 @@ def initdeloy(self,deploy_id):
     logger.info(firecracker_ip)
     logger.info("DONE")
 
+# ##SHUTDOWN
+# from celery.signals import worker_shutdown
+# def at_shoutdown(sender, **k):
+#     print("SHUTTING DOWN")
 
+
+# ##STARTUP
+# from celery.signals import worker_ready
+# @worker_ready.connect
+# @celery.task(bind=True)
+# def at_start(self,sender, **k):
+    
+#     # if gethostname()=="periodic":
+#     #     return
+    
 
 
 ######

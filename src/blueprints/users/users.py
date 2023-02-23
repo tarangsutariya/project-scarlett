@@ -20,7 +20,12 @@ def user_grid():
 @users_bp.route("/")
 @user_login_required
 def user_dashboard():
-    return render_template("user_dashboard.html")
+    deploys = deployments.query.filter_by(user_id=session["user_userid"]).all()
+    sevrs = admin_servers.query.filter_by().all()
+    svrs = {}
+    for svr in sevrs:
+        svrs[svr.server_id]=svr.domain_prefix
+    return render_template("user_dashboard.html",deploys=deploys,svrs=svrs)
 
 @users_bp.route("/login")
 def user_login():
