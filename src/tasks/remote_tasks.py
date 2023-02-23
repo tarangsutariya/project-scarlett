@@ -18,7 +18,7 @@ from fabric import Connection
 from .helpers.caddy_editor import Caddy
 import requests
 import CloudFlare
-from .helpers.utils import tryPort
+from .helpers.utils import tryPort,vm_usage
 import python_on_whales
 celery = make_celery()
 
@@ -249,10 +249,13 @@ def initdeloy(self,deploy_id):
     while not tryPort(socat_port):
             socat_port = random.randint(20000,40000)
     socat = Popen(["socat","TCP4-LISTEN:%s,fork"%(socat_port),"TCP4:%s:22"%(firecracker_ip)], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
-    socat_pid = socat.pid
+    usage = vm_usage(firecracker_ip)
     port_forwarded = {"socat_pid":socat.pid,"external_port":socat_port,"type":"SSH","internal_port":22}
     logger.info(socat_port)
 #####
+    dep.ram_usage = usage["ram_usage"]
+    dep.disk_usage = usage["disk_usage"]
+    dep.cpu_usage=int(usage["load_average"]/dep.cpu_allocated)
     dep.initial_deploy=False
     dep.deploy_path = str_path
     dep.health="healthy"

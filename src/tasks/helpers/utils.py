@@ -15,10 +15,14 @@ def tryPort(port):
 
 def vm_usage(ip):
     stats = {}
-    with Connection("root@"+ip) as c:
-        free_output = c.run("free",hide=True).stdout
-        df_output = c.run("df /",hide=True).stdout
-        uptime_output = c.run("uptime",hide=True).stdout
+    try:
+        with Connection("root@"+ip,connect_timeout=10) as c:
+            free_output = c.run("free",hide=True).stdout
+            df_output = c.run("df /",hide=True).stdout
+            uptime_output = c.run("uptime",hide=True).stdout
+    except:
+        stats["offline"]=True
+        return stats
     free_output = free_output.strip().split()
     stats["ram_total"]=int(free_output[7])//1024
     stats["ram_usage"]=int(free_output[8])//1024
