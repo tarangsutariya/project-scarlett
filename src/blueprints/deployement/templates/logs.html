@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>logs</title>
+
+   
+
+
+
+    <!-- Pico.css -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+
+    <!-- Custom styles for this example -->
+    
+
+
+
+    
+
+<style>
+  @media(min-width : 640px){
+.uul {
+  list-style-type: none;
+  position: fixed;
+  width: 25%;
+
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: auto;
+}
+
+#contentblock{
+  margin-left:25%;
+  padding:1px 16px;
+  height:1000px;
+}
+  }
+@media(max-width : 640px) { 
+.uul{
+    float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  
+}
+.lii{
+    display: inline;
+    margin: 2px;
+}
+
+#contentblock{
+ 
+  padding:1px 16px;
+  height:1000px;
+}
+
+
+ }
+</style>
+
+  </head>
+
+  <body>
+
+    <!-- Nav -->
+    <nav class="container-fluid">
+      <ul>
+        <li><a href="/dashboard" class="contrast" ><strong>Project Scarlett</strong></a></li>
+      
+      </ul>
+      <ul>
+        <li>
+          <details role="list" dir="rtl">
+            <summary aria-haspopup="listbox" role="link" class="secondary">Theme</summary>
+            <ul role="listbox">
+              <li><a href="#" data-theme-switcher="auto">Auto</a></li>
+              <li><a href="#" data-theme-switcher="light">Light</a></li>
+              <li><a href="#" data-theme-switcher="dark">Dark</a></li>
+            </ul>
+         
+          </details>
+        </li>
+      
+        <li>
+            <details role="list" dir="rtl">
+              <summary aria-haspopup="listbox" role="link" class="secondary">{{session["user_githubusername"]}}</summary>
+              <ul role="listbox">
+               
+                <li><a href="./settings">Settings</a></li>
+                <li><a href="./logout">Log Out</a></li>
+                
+              </ul>
+            </details>
+          </li>
+
+      </ul>
+    </nav><!-- ./ Nav -->
+
+    <!-- Main -->
+    
+    <main class="container">
+        <ul class="uul">
+            <li class="lii"><a  href="../{{dep.deploy_id}}">Info</a></li>
+            <li class="lii"><a href="#" class="secondary">Logs</a></li>
+            <li class="lii"><a href="./settings">Settings</a></li>
+            <li class="lii"><a href="./networking">Networking</a></li>
+            <li class="lii"><a href="./notifications">Notifications</a></li>
+
+            <li class="lii"><a href="./envvariables">ENV Variables</a></li>
+          
+          </ul>
+          
+          <div id="contentblock">
+
+  
+           <p>Usage</p>
+
+
+            
+
+          </div>
+
+    </main><!-- ./ Main -->
+
+
+
+
+    <!-- Footer -->
+    <!-- <footer class="container-fluid">
+     Project-Scarlett
+    </footer> -->
+    <!-- ./ Footer -->
+
+
+
+    <!-- Minimal theme switcher -->
+    <script src="/static/js/minimal-theme-switcher.js"></script>
+
+  </body>
+
+</html>

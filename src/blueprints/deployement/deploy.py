@@ -87,11 +87,37 @@ def initdeploystatus(deploy_id,st):
 @user_owns_deployment
 def deployment_home(dep):
     from tasks.remote_tasks import celery
-    return str( celery.AsyncResult(dep.celery_process_id).status)
+    return render_template("deployment.html",dep=dep)
 
 
 
 
 @deploy_bp.route("/<deploy_id>/settings")
-def deployment_settings(deploy_id):
-    return str(2)
+@user_login_required
+@user_owns_deployment
+def deployment_settings(dep):
+    return render_template("settings.html",dep=dep)
+
+@deploy_bp.route("/<deploy_id>/logs")
+@user_login_required
+@user_owns_deployment
+def deployment_logs(dep):
+    return render_template("logs.html",dep=dep)
+
+@deploy_bp.route("/<deploy_id>/networking")
+@user_login_required
+@user_owns_deployment
+def deployment_networking(dep):
+    return render_template("networking.html",dep=dep)
+
+@deploy_bp.route("/<deploy_id>/notifications")
+@user_login_required
+@user_owns_deployment
+def deployment_notifications(dep):
+    return render_template("notifications.html",dep=dep)
+
+@deploy_bp.route("/<deploy_id>/envvariables")
+@user_login_required
+@user_owns_deployment
+def deployment_envvariables(dep):
+    return render_template("env_variables.html",dep=dep)
