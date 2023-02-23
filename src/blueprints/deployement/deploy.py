@@ -50,7 +50,7 @@ def initdeploystatus(deploy_id,st):
     if deploy.user_id!=session["user_userid"]:
         abort(403)
     if deploy.initial_deploy==False:
-        abort(418)
+        return jsonify({"curr":9,"total":9,"message":"Redirecting.."})
     from tasks.remote_tasks import celery
     if celery.AsyncResult(deploy.celery_process_id).failed():
         return jsonify({"curr":9,"total":9,"message":"Some error has occured redirecting.."})
