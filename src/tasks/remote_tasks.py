@@ -192,9 +192,12 @@ def initdeloy(self,deploy_id):
         ssh_connection.put("/tmp/env",'repo/.env')
     logger.info("git clone done")
     self.update_state(state='PENDING', meta={'curr': 6, 'total': 9,"message":"running docker compose up"})
-    with Connection("root@"+firecracker_ip) as ssh_connection:
-        ssh_connection.run("cd repo && docker compose up -d")
-    
+    compose_success = True
+    try:
+        with Connection("root@"+firecracker_ip) as ssh_connection:
+            ssh_connection.run("cd repo && docker compose up -d")
+    except:
+        compose_success = False
 
     self.update_state(state='PENDING', meta={'curr': 7, 'total': 9,"message":"Configuring network rules"})
     
@@ -258,9 +261,14 @@ def initdeloy(self,deploy_id):
     dep.cpu_usage=int(usage["load_average"]/dep.cpu_allocated)
     dep.initial_deploy=False
     dep.deploy_path = str_path
-    dep.health="healthy"
-    dep.last_deployment_status="Deployed"
-    dep.deployment_process_desc="Successfully deployed"
+    if compose_success:
+        dep.health="healthy"
+        dep.last_deployment_status="Deployed"
+        dep.deployment_process_desc="Successfully deployed"
+    else:
+        dep.health="failure"
+        dep.last_deployment_status="composeerror"
+        dep.deployment_process_desc="docker compose failed"
     dep.tap_device=tap_device
     dep.interal_ip=firecracker_ip
     dep.firecracker_ip=firecracker_pid
