@@ -187,11 +187,12 @@ def initdeloy(self,deploy_id):
     elif dep.accessed_by_custom_token == True:
         tokenn = dep.custom_token
     hook_success  = True
+    already_set = False
     try:
         g = Github(tokenn)
         repo = g.get_repo(dep.repo_id)
         hooks = repo.get_hooks()
-        already_set = False
+        
         for hook in hooks:
             if hook.raw_data["config"]["url"]==webhook_path:
                 already_set=True
@@ -275,7 +276,7 @@ def initdeloy(self,deploy_id):
     dep.disk_usage = usage["disk_usage"]
     dep.cpu_usage=int(usage["load_average"]/dep.cpu_allocated)
     dep.initial_deploy=False
-    dep.hook_set = hook_success
+    dep.hook_set = (hook_success or already_set)
     dep.deploy_path = str_path
     if compose_success:
         dep.health="healthy"
