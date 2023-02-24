@@ -16,6 +16,7 @@ class deployments(db.Model):
     deploy_path = db.Column(db.String)
     branch_name = db.Column(db.String)
     commit_hash = db.Column(db.String)
+    hook_set = db.Column(db.Boolean)
     health = db.Column(db.String)
     primary_domain = db.Column(db.String)
     secondary_domain = db.Column(db.String)

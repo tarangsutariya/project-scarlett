@@ -25,7 +25,7 @@ celery = make_celery()
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 
-from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path
+from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path,webhook_path
 from config import cloudflare_api_key
 
 
@@ -186,6 +186,21 @@ def initdeloy(self,deploy_id):
         tokenn = admin_github_tokens.query.filter_by(token_id=dep.org_token_id).first().github_token
     elif dep.accessed_by_custom_token == True:
         tokenn = dep.custom_token
+    hook_success  = True
+    try:
+        g = Github(tokenn)
+        repo = g.get_repo(dep.repo_id)
+        hooks = repo.get_hooks()
+        already_set = False
+        for hook in hooks:
+            if hook.raw_data["config"]["url"]==webhook_path:
+                already_set=True
+                break
+        if not already_set:
+            repo.create_hook(name="web",config={'content_type': 'json', 'insecure_ssl': '0', 'url': 'http://arm.tarang.uk:5000/webhook/'})
+    except:
+        hook_success = False
+    
     with Connection("root@"+firecracker_ip) as ssh_connection:
         ssh_connection.run("git clone https://%s@%s repo"%(tokenn,"github.com/"+dep.repo_owner+"/"+dep.repo_name))
         ssh_connection.run("cd repo && git checkout %s"%(dep.branch_name))
@@ -260,6 +275,7 @@ def initdeloy(self,deploy_id):
     dep.disk_usage = usage["disk_usage"]
     dep.cpu_usage=int(usage["load_average"]/dep.cpu_allocated)
     dep.initial_deploy=False
+    dep.hook_set = hook_success
     dep.deploy_path = str_path
     if compose_success:
         dep.health="healthy"
