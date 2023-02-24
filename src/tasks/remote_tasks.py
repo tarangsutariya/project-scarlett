@@ -197,7 +197,7 @@ def initdeloy(self,deploy_id):
                 already_set=True
                 break
         if not already_set:
-            repo.create_hook(name="web",config={'content_type': 'json', 'insecure_ssl': '0', 'url': 'http://arm.tarang.uk:5000/webhook/'})
+            repo.create_hook(name="web",config={'content_type': 'json', 'insecure_ssl': '0', 'url': webhook_path})
     except:
         hook_success = False
     
