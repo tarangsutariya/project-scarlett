@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from blueprints.users.users import users_bp
 from blueprints.admin.admin import admin_bp
 from blueprints.auth.auth import auth_bp
+from blueprints.webhooks.webhooks import webhook_bp
 from celery import Celery
 from celery.schedules import crontab
 from config import secret_key,postgres_uri,redis_uri
@@ -69,6 +70,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(deploy_bp,url_prefix="/deployment")
     app.register_blueprint(users_bp,url_prefix="/dashboard")
+    app.register_blueprint(webhook_bp,url_prefix="/webhook")
     return app
 
 

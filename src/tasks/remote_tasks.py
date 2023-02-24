@@ -306,6 +306,7 @@ def initdeloy(self,deploy_id):
 
 
 ######
+### r.create_hook(name="web",config={'content_type': 'json', 'insecure_ssl': '0', 'url': 'http://arm.tarang.uk:5000/webhook/'})
 #git clone url foldername
 #git fetch
 #git merge
