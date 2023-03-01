@@ -120,8 +120,44 @@
           <div id="contentblock">
 
   
-           <p>Usage</p>
-
+            <label>Environment Variables</label><br/>
+            <div>
+            <input autocomplete="off" id="envname" style="float: inline-start;width: 48%; margin-right: 2%;"><input id="envvalue" autocomplete="off" style="float: inline-end;width: 48%; ">
+            
+            </div>
+            <a  onclick="addenv()"   class="outline" style="float: inline-end;">Add</a>
+            <!--ENVIRONMENT VARIABBLE -->
+            <br/><br/><br/>
+            <div>
+            
+            <table role="grid" >
+              <thead>
+                <th>
+                  Variable name
+                </th>
+                <th>
+                  <span style="float: right;"> Action </span>
+               
+                </th>
+              </thead>
+            <tbody id="envtab">
+            {% for env in dep.env_variables %}
+              <tr>
+             <td>
+              {{env}}
+             </td>
+             <td>
+              <a href="#" onclick="event.preventDefault();" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
+              <a href="#" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 9px;padding-left: 10px;padding-right: 10px;">Edit</a>
+              <a href="#" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 10px;padding-left: 10px;padding-right: 10px;">View</a>
+             </td>
+              
+              </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            
+           <button>Save</button>
 
             
 
