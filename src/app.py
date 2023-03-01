@@ -24,7 +24,8 @@ CELERY_TASK_LIST = [
     # 'tasks.tasks',
     # 'blueprints.admin.tasks'
     'tasks.periodic_tasks',
-    'tasks.remote_tasks'
+    'tasks.remote_tasks',
+    'tasks.manage_deploys'
 
    
 ]

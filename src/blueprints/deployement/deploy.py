@@ -126,8 +126,16 @@ def deployment_envvariables(dep):
 ###deploy apis
 
 
-@deploy_bp.route("/<deploy_id>/editeng",methods=["POST"])
+@deploy_bp.route("/<deploy_id>/editenv",methods=["POST"])
 @user_login_required
 @user_owns_deployment
 def edit_env(dep):
+    varss = request.json["env_variables"]
+    env_vars = {}
+    for v in varss:
+        env_vars[v[0]]=v[1]
+    dep.env_variables = env_vars
+    db.session.commit()
+    from tasks.manage_deploys import update_env_variables
+    update_env_variables.delay(dep.deploy_id)
     return "OK"
