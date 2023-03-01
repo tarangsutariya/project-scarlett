@@ -21,6 +21,16 @@
     
 
 <style>
+
+.healthy{
+  color: green;
+}
+
+.offline{
+  color: red;
+}
+
+
   @media(min-width : 640px){
 .uul {
   list-style-type: none;
@@ -118,11 +128,50 @@
           </ul>
           
           <div id="contentblock">
-
-  
-           <p>Usage</p>
+            
 
 
+         <table>
+          <tr>
+            <td>Primary URL</td>
+            <td><a href="https://" style="float: inline-end;">{{dep.primary_domain}}</a></td>
+          </tr>
+          <tr>
+            <td>Secondary URL</td>
+            <td><a href="https://" style="float: inline-end;">{{dep.secondary_domain}}</a></td>
+          </tr>
+         
+          <tr>
+            <td>Status</td>
+            <td><span style="float: inline-end;" class="{{dep.health}}">{{dep.health}}</span></td>
+          </tr>
+
+          <tr>
+            <td>Repository</td>
+            <td><a href="https://github.com/{{dep.repo_owner}}/{{dep.repo_name}}" style="float: inline-end;">{{dep.repo_owner}}/{{dep.repo_name}}</a></td>
+          </tr>
+          <tr>
+            <td>Branch</td>
+            <td><span style="float: inline-end;"><svg width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><title>ionicons-v5-d</title><path d="M416,160a64,64,0,1,0-96.27,55.24c-2.29,29.08-20.08,37-75,48.42-17.76,3.68-35.93,7.45-52.71,13.93V151.39a64,64,0,1,0-64,0V360.61a64,64,0,1,0,64.42.24c2.39-18,16-24.33,65.26-34.52,27.43-5.67,55.78-11.54,79.78-26.95,29-18.58,44.53-46.78,46.36-83.89A64,64,0,0,0,416,160ZM160,64a32,32,0,1,1-32,32A32,32,0,0,1,160,64Zm0,384a32,32,0,1,1,32-32A32,32,0,0,1,160,448ZM352,192a32,32,0,1,1,32-32A32,32,0,0,1,352,192Z"/></svg>{{dep.branch_name}}</span></td>
+          </tr>
+          <tr>
+            <td>CPU usage : </td>
+            <td><span style="float: inline-end;">{{dep.cpu_usage}} %</span></td>
+          </tr>
+          <tr>
+            <td>Ram usage : </td>
+            <td><span style="float: inline-end;">{{dep.ram_usage}}/{{dep.ram_allocated}} MB</span></td>
+          </tr>
+          <tr>
+            <td>Disk usage : </td>
+            <td><span style="float: inline-end;">{{dep.disk_usage}}/{{dep.disk_allocated}} GB</span></td>
+          </tr>
+         </table>
+         <button class="outline">Rebuild</button>
+         <button class="outline">Fetch changes</button>
+         <button class="outline">Redeploy</button>
+         
+         <button style="background-color: red; border-color: red;">Delete</button>
             
 
           </div>

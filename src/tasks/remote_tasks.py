@@ -191,6 +191,7 @@ def initdeloy(self,deploy_id):
     try:
         g = Github(tokenn)
         repo = g.get_repo(dep.repo_id)
+        dep.commit_hash = list(repo.get_commits())[0].sha
         hooks = repo.get_hooks()
         
         for hook in hooks:
@@ -324,7 +325,10 @@ def initdeloy(self,deploy_id):
 
 ######
 ### r.create_hook(name="web",config={'content_type': 'json', 'insecure_ssl': '0', 'url': 'http://arm.tarang.uk:5000/webhook/'})
-#git clone url foldername
+#git pull origin xyz:xyz
+##
+##
+# git clone url foldername
 #git fetch
 #git merge
 #socat TCP4-LISTEN:8111,fork,bind=127.0.0.1 TCP4:10.156.166.2:80
