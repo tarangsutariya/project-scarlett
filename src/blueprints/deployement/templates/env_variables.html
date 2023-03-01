@@ -16,8 +16,8 @@
     <!-- Custom styles for this example -->
     
 
-
-
+    <script src="/static/js/modal.js">
+    </script>
     
 
 <style>
@@ -141,10 +141,10 @@
                 </th>
               </thead>
             <tbody id="envtab">
-            {% for env in dep.env_variables %}
-              <tr>
+     
+              <!-- <tr>
              <td>
-              {{env}}
+            
              </td>
              <td>
               <a href="#" onclick="event.preventDefault();" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
@@ -152,12 +152,12 @@
               <a href="#" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 10px;padding-left: 10px;padding-right: 10px;">View</a>
              </td>
               
-              </tr>
-            {% endfor %}
+              </tr> -->
+           
             </tbody>
             </table>
             
-           <button>Save</button>
+           <button id="sbutton" onclick="savbtn()">Save</button>
 
             
 
@@ -171,13 +171,166 @@
     <!-- Footer -->
     <!-- <footer class="container-fluid">
      Project-Scarlett
-    </footer> -->
+    </footer> -->tojson
     <!-- ./ Footer -->
 
 
 
     <!-- Minimal theme switcher -->
     <script src="/static/js/minimal-theme-switcher.js"></script>
+
+<script>
+
+let envvarsdict = {{dep.env_variables|tojson}}
+
+let envvars = []
+for(let vv of Object.keys(envvarsdict)){
+  envvars.push([vv,envvarsdict[vv]])
+}
+
+
+
+function renderenv(){
+let tb = document.getElementById("envtab")
+let nr=tb.rows.length
+// for(i=0;i<nr;i++){
+//   tb.deleteRow(i)
+// }
+let res = ""
+for(i=0;i<envvars.length;i++){
+// let ro = document.createElement("tr")
+res +=`<tr> <td>
+  ${envvars[i][0]}
+ </td>
+ <td>
+  <a href="#" onclick="event.preventDefault();delenv(${i})" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
+  <a href="#" onclick="event.preventDefault();envind=${i};document.getElementById('modalerror').style.display='none';renview(${i});toggleModal(event)" data-target="modal-viewenv" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 10px;padding-left: 10px;padding-right: 10px;">View</a>
+ </td> </tr>`
+//  tb.appendChild(ro)
+
+}
+
+tb.innerHTML=res
+
+}
+
+
+function addenv(){
+let envn = document.getElementById("envname")
+let envv = document.getElementById("envvalue")
+
+if(envn.value=="" || envv.value==""){
+  envn.placeholder="environment variable name"
+  envv.placeholder="environment variable value"
+  return
+}
+
+envvar=[envn.value,envv.value]
+envvars.push(envvar)
+envn.value=""
+envv.value=""
+renderenv()
+
+}
+
+
+function delenv(i){
+envvars.splice(i,1)
+renderenv()
+
+}
+
+function renview(i){
+
+  document.getElementById("env1").value=envvars[i][0]
+  document.getElementById("env2").value=envvars[i][1]
+  return;
+}
+
+function savenv(event){
+let modalerror = document.getElementById("modalerror")
+modalerror.style.display="none"
+let env1 = document.getElementById("env1")
+let env2 = document.getElementById("env2")
+if(env1.value=="" || env2.value==""){
+  modalerror.style.display=""
+  return
+}
+envvars[envind][0]=env1.value
+envvars[envind][1]=env2.value
+renderenv()
+toggleModal(event)
+}
+renderenv()
+
+async function savbtn(){
+let btn = document.getElementById("sbutton")
+btn.setAttribute("aria-busy","true")
+btn.innerText = "Saving.."
+btn.setAttribute("disabled","true")
+
+let res = await fetch('./editenv', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({"env_variables":envvars
+    
+    })
+    });
+
+let restext = await res.text()
+
+
+
+
+}
+
+
+</script>
+
+
+
+<!--MODALS-->
+
+<dialog id="modal-viewenv">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-viewenv"
+      onClick="event.preventDefault();toggleModal(event)">
+    </a>
+    <h3>Environment Variable</h3>
+    <p>
+   <input id="env1">
+   <input id="env2">
+
+    </p>
+    <p id="modalerror" style="display: none; color: red;">Values cannot be empty</p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-viewenv"
+        onClick="event.preventDefault();toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-viewenv"
+        onClick="event.preventDefault();savenv(event)">
+        Save
+      </a>
+    </footer>
+  </article>
+</dialog>
+
+
+<!--MODALS-->
+
+
 
   </body>
 

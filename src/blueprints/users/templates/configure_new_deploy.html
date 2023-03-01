@@ -634,26 +634,48 @@ function togadv(){
 
 
 
+// function renderenv(){
+// let tb = document.getElementById("envtab")
+// let nr=tb.rows.length
+// for(i=0;i<nr;i++){
+//   tb.deleteRow(i)
+// }
+// for(i=0;i<envvars.length;i++){
+// let ro = document.createElement("tr")
+// ro.innerHTML=` <td>
+//   ${envvars[i][0]}
+//  </td>
+//  <td>
+//   <a href="#" onclick="event.preventDefault();delenv(${i})" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
+//   <a href="#" onclick="event.preventDefault();envind=${i};document.getElementById('modalerror').style.display='none';renview(${i});toggleModal(event)" data-target="modal-viewenv" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 10px;padding-left: 10px;padding-right: 10px;">View</a>
+//  </td>`
+//  tb.appendChild(ro)
+
+// }
+
+
+
+// }
 function renderenv(){
 let tb = document.getElementById("envtab")
 let nr=tb.rows.length
-for(i=0;i<nr;i++){
-  tb.deleteRow(i)
-}
+// for(i=0;i<nr;i++){
+//   tb.deleteRow(i)
+// }
+let res = ""
 for(i=0;i<envvars.length;i++){
-let ro = document.createElement("tr")
-ro.innerHTML=` <td>
+// let ro = document.createElement("tr")
+res +=`<tr> <td>
   ${envvars[i][0]}
  </td>
  <td>
   <a href="#" onclick="event.preventDefault();delenv(${i})" role="button" class="secondary outline" style="padding: 4px; padding-left: 10px;padding-right: 10px; float: right;margin-left: 9px;">Delete</a>
   <a href="#" onclick="event.preventDefault();envind=${i};document.getElementById('modalerror').style.display='none';renview(${i});toggleModal(event)" data-target="modal-viewenv" role="button" class="secondary outline" style="padding: 4px; float: right;margin-left: 10px;padding-left: 10px;padding-right: 10px;">View</a>
- </td>`
- tb.appendChild(ro)
+ </td> </tr>`
+//  tb.appendChild(ro)
 
 }
-
-
+tb.innerHTML=res
 
 }
 

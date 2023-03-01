@@ -121,3 +121,13 @@ def deployment_notifications(dep):
 @user_owns_deployment
 def deployment_envvariables(dep):
     return render_template("env_variables.html",dep=dep)
+
+
+###deploy apis
+
+
+@deploy_bp.route("/<deploy_id>/editeng",methods=["POST"])
+@user_login_required
+@user_owns_deployment
+def edit_env(dep):
+    return "OK"
