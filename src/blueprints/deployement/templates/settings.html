@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>settings</title>
+    <title>Settings</title>
   
    
 
@@ -118,12 +118,19 @@
       </ul>
           
           <div id="contentblock">
+          <label>Redployment process </label>
+          <select id="reloadtype" autocomplete="off">
+            <option value="hotreload"> Hot Reload </option>
+            <option value="rebuild"> Rebuild </option>
+            <option value="redeploy"> Redeploy </option>
+            <option value="manual">Manual</option>
+          </select>
+          
+           
 
-  
-           <p>Usage</p>
-
-
-            
+          <h7>Enter your SSH public-key here : </h7>
+          <textarea autocomplete="off"></textarea>
+          <button>Save</button> 
 
           </div>
 
