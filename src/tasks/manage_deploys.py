@@ -43,7 +43,7 @@ def update_env_variables(deploy_id):
     ssh_connect_retries = 0
     while ssh_connect_retries < 5:
         try:
-            Connection("root@"+dep.interal_ip,connect_timeout=10).run("hostname")
+            Connection("root@"+dep.internal_ip,connect_timeout=10).run("hostname")
             
             break
         except:
@@ -51,4 +51,4 @@ def update_env_variables(deploy_id):
             ssh_connect_retries+=1
     if ssh_connect_retries>=5:
         raise Exception("SSH CONNECTION TIMED OUT")
-    Connection("root@"+dep.interal_ip,connect_timeout=10).put("/tmp/env",'repo/.env')
+    Connection("root@"+dep.internal_ip,connect_timeout=10).put("/tmp/env",'repo/.env')

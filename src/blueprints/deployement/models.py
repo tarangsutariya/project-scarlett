@@ -30,7 +30,7 @@ class deployments(db.Model):
     cpu_usage = db.Column(db.Float)
     ram_usage =db.Column(db.Integer)
     disk_usage = db.Column(db.Float)
-    interal_ip = db.Column(db.String)
+    internal_ip = db.Column(db.String)
     slack_nofity = db.Column(db.JSON)
     email_notify = db.Column(db.JSON)
     pushover_notify = db.Column(db.JSON)

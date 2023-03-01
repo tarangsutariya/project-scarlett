@@ -120,7 +120,7 @@ def initdeloy(self,deploy_id):
     ###########################
     firecracker_pid = p.pid
     
-    logger.info(firecracker_pid)
+    #logger.info("Firecracker_pid"+str(firecracker_pid))
     fire_kernel_json = {
             "kernel_image_path": k_path,
             "boot_args": "console=ttyS0 reboot=k panic=1 pci=off"
@@ -288,10 +288,10 @@ def initdeloy(self,deploy_id):
         dep.last_deployment_status="composeerror"
         dep.deployment_process_desc="docker compose failed"
     dep.tap_device=tap_device
-    dep.interal_ip=firecracker_ip
+    dep.internal_ip=firecracker_ip
     dep.firecracker_ip=firecracker_pid
     dep.firecracker_socket=firecracker_socket
-    dep.forwarded_ports = port_forwarded
+    dep.forwarded_ports = {"SSH":[port_forwarded]}
     docker = python_on_whales.DockerClient(host="ssh://root@%s"%(firecracker_ip))
     containers = list(docker.ps())
     contn = {}

@@ -3,7 +3,7 @@ from functools import wraps
 from blueprints.users.login_manager import user_login_required
 import time
 from models import users,db
-from blueprints.admin.models import admin_user
+from blueprints.admin.models import admin_user,admin_servers
 from .models import deployments
 
 
@@ -137,5 +137,6 @@ def edit_env(dep):
     dep.env_variables = env_vars
     db.session.commit()
     from tasks.manage_deploys import update_env_variables
-    update_env_variables.delay(dep.deploy_id)
+    prefix = admin_servers.query.filter_by(server_id=dep.server_id).first().domain_prefix
+    update_env_variables.apply_async(args=[dep.deploy_id],queue=prefix)
     return "OK"
