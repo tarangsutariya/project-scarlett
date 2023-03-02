@@ -612,7 +612,26 @@ if(restext=="something went wrong"){
 }else if(restext=="OK"){
  return;
 }else{
-  inp.value=restext
+
+  const url = restext;
+
+// Split the URL by dots
+const urlParts = url.split('.');
+
+// Extract the subdomain and domain parts
+let subdomain = '';
+let domain = '';
+if (urlParts.length === 2) {
+  domain = url;
+} else if (urlParts.length > 2) {
+  subdomain = urlParts[0];
+  domain = urlParts.slice(1).join('.');
+}
+
+
+
+
+  inp.value=subdomain
 }
 
 

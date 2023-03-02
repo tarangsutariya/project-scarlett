@@ -5,7 +5,7 @@ import time
 from models import users,db
 from blueprints.admin.models import admin_user,admin_servers
 from .models import deployments
-
+from config import domains
 
 deploy_bp = Blueprint("deployments",__name__,template_folder="templates",static_folder="static")
 
@@ -86,8 +86,9 @@ def initdeploystatus(deploy_id,st):
 @user_login_required
 @user_owns_deployment
 def deployment_home(dep):
-    from tasks.remote_tasks import celery
-    return render_template("deployment.html",dep=dep)
+    # from tasks.remote_tasks import celery
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    return render_template("deployment.html",dep=dep,svr=svr)
 
 
 
@@ -108,7 +109,7 @@ def deployment_logs(dep):
 @user_login_required
 @user_owns_deployment
 def deployment_networking(dep):
-    return render_template("networking.html",dep=dep)
+    return render_template("networking.html",dep=dep,domains=domains)
 
 @deploy_bp.route("/<deploy_id>/notifications")
 @user_login_required

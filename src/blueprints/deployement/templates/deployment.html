@@ -166,6 +166,15 @@
             <td>Disk usage : </td>
             <td><span style="float: inline-end;">{{dep.disk_usage}}/{{dep.disk_allocated}} GB</span></td>
           </tr>
+          <tr>
+            <td>Server : </td>
+            <td> <span style="float: inline-end;"> {{svr.domain_prefix}} </span></td>
+          </tr>
+          <tr>
+            <td>Server Location : </td>
+            <td> <img src="/static/flags/{{svr.server_location_code}}.svg" style="float: inline-end;" width="32px" height="32px"> </td>
+          </tr>
+
          </table>
          <button class="outline">Rebuild</button>
          <button class="outline">Fetch changes</button>

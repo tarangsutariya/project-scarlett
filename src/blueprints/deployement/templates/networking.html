@@ -64,7 +64,8 @@
 
  }
 </style>
-
+<script src="/static/js/modal.js">
+</script>
   </head>
 
   <body>
@@ -123,22 +124,80 @@
            <p>HTTP forwards</p>
            <table>
             <thead>
-            <th>URL</th>
-            <th>Internal port</th>
-            <th>Actions</th>
+            <th style="text-align: center">URL</th>
+            <th style="text-align: center">Internal port</th>
+            <th style="text-align: center">Actions</th>
           </thead>
             <tbody>
-          {{dep.forwarded_ports}}
+          {%for rule in dep.forwarded_ports["HTTP"]%}
            <tr>
-
+           <td style="text-align: center"></td>
+           <td style="text-align: center"></td>
+           <td style="text-align: center"><img src="/static/delete.svg"></td>
           </tr>
- 
+              {% endfor %}
 
+         <tr>
+          <td>
 
+          </td>
+          <td>
+
+          </td>
+          <td style="text-align: center">
+          <a data-target="modal-addhttp" onclick="event.preventDefault();clearhttperror();toggleModal(event)">  ADD</a> 
+          </td>
+         </tr>
             </tbody>
            </table>
 
-            
+        
+           <p>Port forwards</p>
+           <table >
+            <thead>
+            <th style="text-align: center">External Port</th>
+            <th style="text-align: center">Internal port</th>
+            <th style="text-align: center">Actions</th>
+          </thead>
+            <tbody>
+        
+           <tr>
+           <td style="text-align: center">{{dep.forwarded_ports["SSH"][0]["external_port"]}}</td>
+           <td style="text-align: center">22 (SSH)</td>
+           <td style="text-align: center"></td>
+          </tr>
+          {%for rule in dep.forwarded_ports["PORT"]%}
+          <tr>
+          <td style="text-align: center"></td>
+          <td style="text-align: center"></td>
+          <td style="text-align: center"><img src="/static/delete.svg"></td>
+         </tr>
+             {% endfor %}  
+
+         <tr>
+          <td>
+
+          </td>
+          <td>
+
+          </td>
+          <td style="text-align: center">
+          <a>  ADD</a> 
+          </td>
+         </tr>
+            </tbody>
+           </table>
+
+
+
+
+
+
+
+
+
+
+
 
           </div>
 
@@ -157,6 +216,82 @@
 
     <!-- Minimal theme switcher -->
     <script src="/static/js/minimal-theme-switcher.js"></script>
+
+
+
+
+<!--MODALS-->
+
+<dialog id="modal-addhttp">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-addhttp"
+      onClick="event.preventDefault();toggleModal(event)">
+    </a>
+    <h3>Add http forward</h3>
+    <p>
+      <label>Internal port</label>
+   <input autocomplete="off" id="hportt">
+   <label>URL</label>
+   <input id="hurl" style="width: 40%;" autocomplete="off">
+   <select autocomplete="off" style="width: 50%;" id="domain">
+  {% for dm in domains%}
+    <option value="{{dm}}">{{dm}} </option>
+  {% endfor %}
+  </select>
+ <p id="addhttperror" style="color:red"></p>
+    </p>
+    <p id="addhttperror" style="color:red"></p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-addhttp"
+        onClick="event.preventDefault();toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-addhttp"
+        onClick="event.preventDefault();addhttp(event)">
+        Save
+      </a>
+    </footer>
+  </article>
+</dialog>
+
+
+<!--MODALS-->
+
+<script>
+function clearhttperror(){
+  document.getElementById("addhttperror").innerText=""
+}
+
+async function addhttp(e){
+clearhttperror()
+let errp = document.getElementById("addhttperror")
+let hportt = document.getElementById("hportt") 
+let port = parseInt(hportt.value)
+
+if(isNaN(port) || (port<0 && port>65000 )){
+  errp.innerText="PORT NEEDS TO BE A NUMBER BETWEEN 1-65000"
+  return
+}
+let hurl = document.getElementById("hurl")
+let domainn = document.getElementById("domain")
+
+
+
+
+}
+
+
+</script>
+
+
 
   </body>
 
