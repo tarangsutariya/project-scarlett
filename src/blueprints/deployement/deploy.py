@@ -6,7 +6,10 @@ from models import users,db
 from blueprints.admin.models import admin_user,admin_servers
 from .models import deployments
 from config import domains
-
+import python_on_whales
+from ansi2html import Ansi2HTMLConverter
+from datetime import timedelta
+conv = Ansi2HTMLConverter()
 deploy_bp = Blueprint("deployments",__name__,template_folder="templates",static_folder="static")
 
 
@@ -141,3 +144,27 @@ def edit_env(dep):
     prefix = admin_servers.query.filter_by(server_id=dep.server_id).first().domain_prefix
     update_env_variables.apply_async(args=[dep.deploy_id],queue=prefix)
     return "OK"
+
+
+###LOGS STREAMING
+
+
+@deploy_bp.route("/<deploy_id>/containerlogs",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def streamlogs(dep):
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first().ip_address
+    container_id = request.json["container_id"]
+    docker = python_on_whales.DockerClient(host="ssh://root@%s:%s"%(svr,str(dep.forwarded_ports["SSH"][0]["external_port"])))
+    try:
+        timestamp = request.json["timestamp"]
+        response = {}
+        return response
+    except:
+    
+        response = {}
+        logs =docker.container.logs(container_id,tail=100)
+        logs = conv.convert(logs,full=False)
+        logs = logs.split('\n')
+        response["logs"]=logs
+        return jsonify(response)

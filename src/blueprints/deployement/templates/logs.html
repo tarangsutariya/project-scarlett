@@ -16,7 +16,15 @@
     <!-- Custom styles for this example -->
     
 
-
+    <style type="text/css">
+      .ansi2html-content { display: inline; white-space: pre-wrap; word-wrap: break-word; }
+      .body_foreground { color: #AAAAAA; }
+      .body_background { background-color: #000000; }
+      .inv_foreground { color: #000000; }
+      .inv_background { background-color: #AAAAAA; }
+      .ansi1 { font-weight: bold; }
+      .ansi31 { color: #aa0000; }
+      .ansi33 { color: #aa5500; }</style>
 
     
 
@@ -128,24 +136,35 @@
           <button style="width: 25%; float: inline-end;">Add</button>
           <br/> <br/>
           <br/>
-        <!-- <table>
+        <table>
           <tr><td>web <img src="/static/delete.svg" style="float: inline-end;">  </td></tr>
+        <tr>
+          <td>
+            
+          <div style="height: 300px; background-color: black;padding: 5px; overflow-y: scroll; white-space: pre-line;">
+
+
+          </div></td>
+        </tr>
+          <!-- <tr><td>web <img src="/static/delete.svg" style="float: inline-end;">  </td></tr>
           <tr><td>
         <div style="height: 300px; background-color: black; padding :8px;"> asdasdasd</div>
             
 
           </div>
-        </td></tr>
-
+        </td></tr> -->
+<!-- 
         <tr><td>web <img src="/static/delete.svg" style="float: inline-end;">  </td></tr>
         <tr><td>
       <div style="height: 270px; background-color: black; padding :8px;"> asdasdasd</div>
           
 
         </div>
-      </td></tr>
+      </td></tr> -->
 
-        </table> -->
+        </table>
+
+        {{dep.containers}}
     </main><!-- ./ Main -->
 
 
