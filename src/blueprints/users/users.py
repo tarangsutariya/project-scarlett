@@ -9,7 +9,10 @@ from blueprints.deployement.countries import random_words
 import random
 from blueprints.deployement.models import deployments
 users_bp = Blueprint("users",__name__,template_folder="templates",static_folder="static")
+from config import cloudflare_api_key
+import CloudFlare
 
+cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 ######DANGER DELETE THIS##
 @users_bp.route("/grid")
 def user_grid():
@@ -264,6 +267,12 @@ def create_new_deploy():
         secondary_domain = random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
         while deployments.query.filter_by(secondary_domain=secondary_domain).first()!=None:
             secondary_domain=random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
+        zone_id = zone_id = cf.zones.get(params = {'name':domains[0]})[0]["id"]
+        records = cf.zones.dns_records.get(zone_id,params={'name':secondary_domain})
+        while len(records)!=0:
+            secondary_domain=random_words[random.randint(0,999)]+'-'+secondary_domain
+            records = cf.zones.dns_records.get(zone_id,params={'name':secondary_domain})
+        
         dep.secondary_domain=secondary_domain
         dep.initial_deploy=True
         envs = {}
@@ -322,6 +331,12 @@ def verifysubav(subdomain):
         new_domain=random_words[random.randint(0,999)]+'-'+new_domain
     while deployments.query.filter_by(secondary_domain=new_domain).first()!=None:
         new_domain=random_words[random.randint(0,999)]+'-'+new_domain
+    
+    zone_id = zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+    records = cf.zones.dns_records.get(zone_id,params={'name':new_domain})
+    while len(records)!=0:
+        new_domain=random_words[random.randint(0,999)]+'-'+new_domain
+        records = cf.zones.dns_records.get(zone_id,params={'name':new_domain})
     if subdomain==new_domain:
         return "OK"
     else:
