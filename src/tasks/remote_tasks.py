@@ -20,6 +20,7 @@ import requests
 import CloudFlare
 from .helpers.utils import tryPort,vm_usage
 import python_on_whales
+import copy
 celery = make_celery()
 
 from celery.utils.log import get_task_logger
@@ -355,8 +356,16 @@ def addportforward(deploy_id,internal_port):
     socat_port = random.randint(20000,40000)
     while not tryPort(socat_port):
             socat_port = random.randint(20000,40000)
-    socat = Popen(["socat","TCP4-LISTEN:%s,fork"%(socat_port),"TCP4:%s:22"%(dep.internal_ip)], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
-    
+    socat = Popen(["socat","TCP4-LISTEN:%s,fork"%(socat_port),"TCP4:%s:%s"%(dep.internal_ip,internal_port)], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
+    new_forwarded = dict(dep.forwarded_ports)
+    new_forwarded = copy.deepcopy(new_forwarded)
+    for rules in new_forwarded["PORT"]:
+        if rules["external_port"]==None and rules["internal_port"]==internal_port and rules["socat_pid"]==None:
+            rules["external_port"]=socat_port
+            rules["socat_pid"]=socat.pid
+    #new_forwarded["PORT"].append({"external_port":socat_port,"internal_port":internal_port,"socat_pid":socat_pid})
+    dep.forwarded_ports=new_forwarded
+    db.session.commit()
     #port_forwarded = {"socat_pid":socat.pid,"external_port":socat_port,"type":"SSH","internal_port":22}
 
 # ##SHUTDOWN

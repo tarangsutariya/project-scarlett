@@ -249,7 +249,9 @@ def addportforward(dep):
     port  = int(request.json["port"])
     new_forwarded = dict(dep.forwarded_ports)
     new_forwarded = copy.deepcopy(new_forwarded)
-    new_forwarded["HTTP"].append({"external_port":None,"internal_port":port,"socat_pid":None})
+    new_forwarded["PORT"].append({"external_port":None,"internal_port":port,"socat_pid":None})
     dep.forwarded_ports=new_forwarded
+    from tasks.remote_tasks import addportforward
+    addportforward.apply_async(args=[port,dep.deploy_id],queue=svr.domain_prefix)
     
     return "OK"

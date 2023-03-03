@@ -481,6 +481,11 @@ let rp = await fetch("./addportforward",{
 })
 
 document.getElementById("saveport").setAttribute('aria-busy','false')
+let restext = await rp.text()
+if (restext=="OK"){
+  location.reload()
+}
+errport.innerText="Some error occured please try again"
 }
 
 </script>
