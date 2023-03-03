@@ -15,7 +15,7 @@ from config import cloudflare_api_key
 import CloudFlare
 import copy
 cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
-
+import random
 
 
 ##check if deployment belongs to user
@@ -208,7 +208,7 @@ def add_http_forward(dep):
     new_forwarded = copy.deepcopy(new_forwarded)
     new_forwarded["HTTP"].append({"subdomain":subdomain,"internal_port":internal_port})
     dep.forwarded_ports=new_forwarded
-    print(dep.forwarded_ports)
+    #print(dep.forwarded_ports)
     db.session.commit()
     from tasks.remote_tasks import addhttpforward
     addhttpforward.apply_async(args=[dep.internal_ip,subdomain,internal_port],queue=svr.domain_prefix)
@@ -238,5 +238,18 @@ def deletehttpforward(dep):
     cf.zones.dns_records.delete(zone_id,record_id)
     from tasks.remote_tasks import deletehttpforward
     deletehttpforward.apply_async(args=[subdomain],queue=svr.domain_prefix)
+    
+    return "OK"
+
+@deploy_bp.route("/<deploy_id>/addportforward",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def addportforward(dep):
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    port  = int(request.json["port"])
+    new_forwarded = dict(dep.forwarded_ports)
+    new_forwarded = copy.deepcopy(new_forwarded)
+    new_forwarded["HTTP"].append({"external_port":None,"internal_port":port,"socat_pid":None})
+    dep.forwarded_ports=new_forwarded
     
     return "OK"

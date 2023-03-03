@@ -339,6 +339,26 @@ def deletehttpforward(subdomain):
     response = requests.post('http://localhost:2019/load', headers=headers, data=data)
     
 
+@celery.task
+def addportforward(deploy_id,internal_port):
+    kwargs = {}
+    if platform.system() == 'Windows':
+      
+        CREATE_NEW_PROCESS_GROUP = 0x00000200  
+        DETACHED_PROCESS = 0x00000008         
+        kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, close_fds=True)  
+    elif sys.version_info < (3, 2): 
+        kwargs.update(preexec_fn=os.setsid)
+    else: 
+        kwargs.update(start_new_session=True)
+    dep = deployments.query.filter_by(deploy_id=deploy_id)
+    socat_port = random.randint(20000,40000)
+    while not tryPort(socat_port):
+            socat_port = random.randint(20000,40000)
+    socat = Popen(["socat","TCP4-LISTEN:%s,fork"%(socat_port),"TCP4:%s:22"%(dep.internal_ip)], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
+    
+    #port_forwarded = {"socat_pid":socat.pid,"external_port":socat_port,"type":"SSH","internal_port":22}
+
 # ##SHUTDOWN
 # from celery.signals import worker_shutdown
 # def at_shoutdown(sender, **k):

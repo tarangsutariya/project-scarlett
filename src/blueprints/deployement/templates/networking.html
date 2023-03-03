@@ -182,7 +182,7 @@
 
           </td>
           <td style="text-align: center">
-          <a>  ADD</a> 
+          <a data-target="modal-addport" onclick="clearporterror();toggleModal(event)">  ADD</a> 
           </td>
          </tr>
             </tbody>
@@ -216,6 +216,49 @@
 
     <!-- Minimal theme switcher -->
     <script src="/static/js/minimal-theme-switcher.js"></script>
+
+
+
+<!--PORTS MODAL-->
+<dialog id="modal-addport">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-addport"
+      onClick="event.preventDefault();toggleModal(event)">
+    </a>
+    <h3>Add Port forward rule</h3>
+    <p>
+      <label>Internal port</label>
+   <input autocomplete="off" id="iportt">
+
+  
+ <p id="addporterror" style="color:red"></p>
+    </p>
+    
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-addport"
+        onClick="event.preventDefault();toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-addport" id="saveport"
+        onClick="event.preventDefault();addport(event)">
+        Save
+      </a>
+    </footer>
+  </article>
+</dialog>
+
+
+
+
+
 
 
 
@@ -413,6 +456,32 @@ errp.innerText="something went wrong"
 document.getElementById("savehttp").setAttribute('aria-busy','false')
 }
 
+function clearporterror(){
+  let errport = document.getElementById("addporterror")
+errport.innerText="" 
+}
+
+async function addport(){
+let iportt = document.getElementById("iportt") 
+let port = parseInt(iportt.value)
+let errport = document.getElementById("addporterror")
+errport.innerText=""
+if (isNaN(port) || (port<1 || port>65000)){
+iportt.value=""
+errport.innerText="PORT VALUE SHOULD BE BETWEEN 1 and 65000"
+return;
+}
+document.getElementById("saveport").setAttribute('aria-busy','true')
+let rp = await fetch("./addportforward",{
+  method: "POST", // or 'PUT'
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({"port":port}),
+})
+
+document.getElementById("saveport").setAttribute('aria-busy','false')
+}
 
 </script>
 
