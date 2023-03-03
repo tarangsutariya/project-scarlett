@@ -292,6 +292,8 @@ def initdeloy(self,deploy_id):
     dep.firecracker_ip=firecracker_pid
     dep.firecracker_socket=firecracker_socket
     dep.forwarded_ports = {"SSH":[port_forwarded]}
+    dep.forwarded_ports["HTTP"]=[]
+    dep.forwarded_ports["PORT"]=[]
     docker = python_on_whales.DockerClient(host="ssh://root@%s"%(firecracker_ip))
     containers = list(docker.ps())
     contn = {}
@@ -305,6 +307,25 @@ def initdeloy(self,deploy_id):
     self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"Done"})
     logger.info(firecracker_ip)
     logger.info("DONE")
+
+
+@celery.task
+def addhttpforward(internal_ip,subdomain,port):
+    caddy = Caddy(caddy_path)
+    caddy.add(subdomain,internal_ip,port)
+    headers = {
+        'Content-Type': 'text/caddyfile',
+    }
+
+
+    with open(caddy_path, 'rb') as f:
+        data = f.read()
+
+    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
+    
+
+
+
 
 # ##SHUTDOWN
 # from celery.signals import worker_shutdown

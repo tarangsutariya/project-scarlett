@@ -267,7 +267,7 @@ def create_new_deploy():
         secondary_domain = random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
         while deployments.query.filter_by(secondary_domain=secondary_domain).first()!=None:
             secondary_domain=random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'-'+random_words[random.randint(0,999)]+'.'+domains[0]
-        zone_id = zone_id = cf.zones.get(params = {'name':domains[0]})[0]["id"]
+        zone_id = cf.zones.get(params = {'name':domains[0]})[0]["id"]
         records = cf.zones.dns_records.get(zone_id,params={'name':secondary_domain})
         while len(records)!=0:
             secondary_domain=random_words[random.randint(0,999)]+'-'+secondary_domain

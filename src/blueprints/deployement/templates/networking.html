@@ -306,8 +306,35 @@ if(hurl.value=="" || !subvalid(hurl.value)){
   errp.innerText="sub domain can only contain 1-9 a-z"
   return
 }
-// let response = await fetch('./ava/'+inp.value+'.'+domainn.value)
-// let restext = await response.text()
+let response = await fetch('/dashboard/config/ava/'+hurl.value+'.'+domainn.value)
+let restext = await response.text()
+if(restext!="OK"){
+  const url = restext;
+
+// Split the URL by dots
+const urlParts = url.split('.');
+
+// Extract the subdomain and domain parts
+let subdomain = '';
+let domain = '';
+if (urlParts.length === 2) {
+  domain = url;
+} else if (urlParts.length > 2) {
+  subdomain = urlParts[0];
+  domain = urlParts.slice(1).join('.');
+}
+
+
+
+
+  hurl.value=subdomain
+  errp.innerText="sub domain is taken try this instead"
+  return
+}
+
+
+
+
 
 
 }

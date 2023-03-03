@@ -11,7 +11,10 @@ from ansi2html import Ansi2HTMLConverter
 from datetime import timedelta,datetime
 conv = Ansi2HTMLConverter()
 deploy_bp = Blueprint("deployments",__name__,template_folder="templates",static_folder="static")
+from config import cloudflare_api_key
+import CloudFlare
 
+cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 
 
 
@@ -185,3 +188,23 @@ def streamlogs(dep):
         response["timestamp"]=str(datetime.now())
         response["logs"]=logs
         return jsonify(response)
+    
+####edit network forwards
+
+@deploy_bp.route("/<deploy_id>/addhttpforward",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def add_http_forward(dep):
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    subdomain = request.json["subdomain"]
+    internal_port = int(request.json["port"])
+    subsplit = subdomain.rsplit(".",2)
+    curr_domain = subsplit[-2]+'.'+subsplit[-1]
+    zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+    subd = subdomain.split('.')[0]
+    cf.zones.dns_records.post(zone_id, data={"name":subdomain,"type":"A","content":svr.ip_address})
+    dep.forwarded_ports["HTTP"].append({"subdomain":subdomain,"port":internal_port})
+    from tasks.remote_tasks import addhttpforward
+    addhttpforward.apply_async(args=[dep.internal_ip,subdomain,internal_port],queue=svr.prefix)
+
+    return "OK"
