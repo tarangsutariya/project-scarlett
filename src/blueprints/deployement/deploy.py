@@ -8,7 +8,7 @@ from .models import deployments
 from config import domains
 import python_on_whales
 from ansi2html import Ansi2HTMLConverter
-from datetime import timedelta
+from datetime import timedelta,datetime
 conv = Ansi2HTMLConverter()
 deploy_bp = Blueprint("deployments",__name__,template_folder="templates",static_folder="static")
 
@@ -156,15 +156,31 @@ def streamlogs(dep):
     svr = admin_servers.query.filter_by(server_id=dep.server_id).first().ip_address
     container_id = request.json["container_id"]
     docker = python_on_whales.DockerClient(host="ssh://root@%s:%s"%(svr,str(dep.forwarded_ports["SSH"][0]["external_port"])))
-    try:
-        timestamp = request.json["timestamp"]
+    timestamp = request.json["timestamp"]
+    if timestamp!=None:
+        
+        date_format = '%Y-%m-%d %H:%M:%S.%f'
+        last_time = datetime.strptime(timestamp, date_format)
+
+        logs =docker.container.logs(container_id,since=datetime.now()-last_time)
+        total_sleep =0
+        
+        while logs=="" and total_sleep<15:
+            total_sleep+=2
+            logs =docker.container.logs(container_id,since=datetime.now()-last_time)
         response = {}
-        return response
-    except:
-    
+        response["timestamp"]=str(datetime.now())
+        logs = conv.convert(logs,full=False)
+        logs = logs.split('\n')
+        response["logs"]=logs
+        
+        return jsonify(response)
+    else:
+        
         response = {}
         logs =docker.container.logs(container_id,tail=100)
         logs = conv.convert(logs,full=False)
         logs = logs.split('\n')
+        response["timestamp"]=str(datetime.now())
         response["logs"]=logs
         return jsonify(response)

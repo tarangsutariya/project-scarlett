@@ -128,24 +128,31 @@
           <div id="contentblock">
 
           <p>Container</p>
-           <select style="width: 70%; float: inline-start;" autocomplete="off">
+           <select id="container" style="width: 70%; float: inline-start;" autocomplete="off">
           {% for container_id,values in dep.containers.items() %}
             <option value="{{container_id}}"> {{values}}</option>
           {% endfor %}
           </select>
-          <button style="width: 25%; float: inline-end;">Add</button>
+          <button style="width: 25%; float: inline-end;" onclick="addlog()" >Add</button>
           <br/> <br/>
           <br/>
-        <table>
-          <tr><td>web <img src="/static/delete.svg" style="float: inline-end;">  </td></tr>
+        <table id="logstable">
+
+
+
+          <!-- <tr><td>web <img src="/static/delete.svg" style="float: inline-end;">  </td></tr>
         <tr>
           <td>
             
-          <div style="height: 300px; background-color: black;padding: 5px; overflow-y: scroll; white-space: pre-line;">
+          <div style="height: 300px; background-color: black;color: #f2f2f2 ;padding: 5px; overflow-y: scroll; white-space: pre-line;" id="consl">
 
 
           </div></td>
-        </tr>
+        </tr> -->
+
+
+
+
           <!-- <tr><td>web <img src="/static/delete.svg" style="float: inline-end;">  </td></tr>
           <tr><td>
         <div style="height: 300px; background-color: black; padding :8px;"> asdasdasd</div>
@@ -164,7 +171,7 @@
 
         </table>
 
-        {{dep.containers}}
+      
     </main><!-- ./ Main -->
 
 
@@ -180,6 +187,83 @@
 
     <!-- Minimal theme switcher -->
     <script src="/static/js/minimal-theme-switcher.js"></script>
+
+
+<script>
+var idd = 0
+function addlog(){
+ let cont = document.getElementById("container").options[document.getElementById("container").selectedIndex];
+
+ let tabl = document.getElementById("logstable")
+let numberofrows = idd
+idd+=1
+let frow = document.createElement("tr")
+frow.innerHTML = `<td> ${cont.innerText} <img src="/static/delete.svg" style="float: inline-end; cursor:pointer" onclick="deletec('c${numberofrows}')">  </td>`
+tabl.appendChild(frow)
+let srow = document.createElement("tr")
+srow.innerHTML=`<td>
+            
+            <div style="height: 300px; background-color: black;color: #f2f2f2 ;padding: 5px; overflow-y: scroll; white-space: pre-line;" id="consl${numberofrows}">
+  
+  
+            </div></td>`
+tabl.appendChild(srow)
+frow.setAttribute("class","c"+numberofrows)
+srow.setAttribute("class","c"+numberofrows)
+
+displaylogs(numberofrows,cont.value,null,[])
+
+}
+
+function deletec(cl){
+  let tod = document.getElementsByClassName(cl)
+  tod[0].remove()
+  tod[0].remove()
+}
+
+function displaylogs(cl,c_id,tmsp,logs){
+if(document.getElementsByClassName("c"+cl).length==0){
+  return
+}
+
+let dcon = document.getElementById("consl"+cl)
+for(i=0;i<logs.length-1;i++){
+  let spa = document.createElement("span")
+  spa.innerHTML=logs[i]
+  dcon.appendChild(spa)
+  dcon.appendChild(document.createElement("br"))
+}
+dcon.scrollTop = dcon.scrollHeight;
+pulldata(cl,c_id,tmsp)
+
+
+}
+
+
+
+async function pulldata(cl,c_id,tmsp){
+// let c_id = '3fc943ccc0cd9046b8fcf8a5ffa771a2a854e061a52dda2e7e86f40748a11b71'
+// let tmsp = '2023-03-03 09:48:58.380345'
+// let tmsp = null
+let data = {"container_id":c_id,"timestamp":tmsp}
+fetch('./containerlogs',{
+  method: "POST", // or 'PUT'
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(data),
+}).then((response)=>response.json()).then((data)=>displaylogs(cl,c_id,data.timestamp,data.logs)) 
+
+//let cl = document.getElementById("consl")
+}
+// pulldata('3fc943ccc0cd9046b8fcf8a5ffa771a2a854e061a52dda2e7e86f40748a11b71',null)
+
+</script>
+
+
+
+
+
 
   </body>
 
