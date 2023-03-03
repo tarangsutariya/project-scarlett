@@ -131,9 +131,9 @@
             <tbody>
           {%for rule in dep.forwarded_ports["HTTP"]%}
            <tr>
-           <td style="text-align: center"></td>
-           <td style="text-align: center"></td>
-           <td style="text-align: center"><img src="/static/delete.svg"></td>
+           <td style="text-align: center">{{rule.subdomain}}</td>
+           <td style="text-align: center">{{rule.internal_port}}</td>
+           <td style="text-align: center"><img src="/static/delete.svg" style="cursor: pointer;"  data-target="modal-deletehttp" onclick="deletehttp(event,'{{rule.subdomain}}')"></td>
           </tr>
               {% endfor %}
 
@@ -254,7 +254,7 @@
       </a>
       <a href="#confirm"
         role="button"
-        data-target="modal-addhttp"
+        data-target="modal-addhttp" id="savehttp"
         onClick="event.preventDefault();addhttp(event)">
         Save
       </a>
@@ -263,9 +263,71 @@
 </dialog>
 
 
+<!--DELETE MODAL-->
+
+<!-- Modal -->
+<dialog id="modal-deletehttp">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-deletehttp"
+      onClick="toggleModal(event)">
+    </a>
+    <h3>Are you sure?</h3>
+    <p>
+      Are you sure you want to delete sub-domain 
+      <span id="subdelete"></span> from forwarding rules?
+    </p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-deletehttp"
+        onClick="toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button" style="background-color: red;border-color: red;"
+        data-target="modal-deletehttp"
+        onClick="confirmdeletehttp(event)" id="deleteconfirm">
+        Confirm
+      </a>
+    </footer>
+  </article>
+</dialog>
+
+
+
 <!--MODALS-->
 
 <script>
+
+subdomain_to_delete = ""
+
+function deletehttp(e,subd){
+  document.getElementById("deleteconfirm").disabled = false
+  document.getElementById("deleteconfirm").setAttribute('aria-busy','false')
+  subdomain_to_delete = subd
+  document.getElementById("subdelete").innerText=subd
+  toggleModal(e)
+}
+
+async function confirmdeletehttp(event){
+  document.getElementById("deleteconfirm").setAttribute('aria-busy','true')
+  document.getElementById("deleteconfirm").disabled = true
+  let res = await fetch('./deletehttpforward',{
+    method:"POST",
+    headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({"subdomain":subdomain_to_delete}),
+  })
+  let restext = await res.text()
+  location.reload()
+  toggleModal(event)
+}
+
 
 function subvalid(str) {
   var code, i, len;
@@ -331,12 +393,24 @@ if (urlParts.length === 2) {
   errp.innerText="sub domain is taken try this instead"
   return
 }
+document.getElementById("savehttp").setAttribute('aria-busy','true')
+let rp = await fetch("./addhttpforward",{
+  method: "POST", // or 'PUT'
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({"subdomain":hurl.value+'.'+domainn.value,"port":port}),
+})
 
-
-
-
-
-
+let rptext = await rp.text()
+if(rptext=="OK"){
+  // toggleModal(e)
+  document.getElementById("savehttp").setAttribute('aria-busy','false')
+  location.reload(); 
+  return
+}
+errp.innerText="something went wrong"
+document.getElementById("savehttp").setAttribute('aria-busy','false')
 }
 
 

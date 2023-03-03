@@ -13,7 +13,7 @@ conv = Ansi2HTMLConverter()
 deploy_bp = Blueprint("deployments",__name__,template_folder="templates",static_folder="static")
 from config import cloudflare_api_key
 import CloudFlare
-
+import copy
 cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 
 
@@ -202,9 +202,41 @@ def add_http_forward(dep):
     curr_domain = subsplit[-2]+'.'+subsplit[-1]
     zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
     subd = subdomain.split('.')[0]
-    cf.zones.dns_records.post(zone_id, data={"name":subdomain,"type":"A","content":svr.ip_address})
-    dep.forwarded_ports["HTTP"].append({"subdomain":subdomain,"port":internal_port})
+    cf.zones.dns_records.post(zone_id, data={"name":subd,"type":"A","content":svr.ip_address})
+    # dep.forwarded_ports["HTTP"].append({"subdomain":subdomain,"port":internal_port})
+    new_forwarded = dict(dep.forwarded_ports)
+    new_forwarded = copy.deepcopy(new_forwarded)
+    new_forwarded["HTTP"].append({"subdomain":subdomain,"internal_port":internal_port})
+    dep.forwarded_ports=new_forwarded
+    print(dep.forwarded_ports)
+    db.session.commit()
     from tasks.remote_tasks import addhttpforward
-    addhttpforward.apply_async(args=[dep.internal_ip,subdomain,internal_port],queue=svr.prefix)
+    addhttpforward.apply_async(args=[dep.internal_ip,subdomain,internal_port],queue=svr.domain_prefix)
 
+    return "OK"
+
+@deploy_bp.route("/<deploy_id>/deletehttpforward",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def deletehttpforward(dep):
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    subdomain=request.json["subdomain"]
+    subsplit = subdomain.rsplit(".",2)
+    curr_domain = subsplit[-2]+'.'+subsplit[-1]
+    new_forwarded = dict(dep.forwarded_ports)
+    new_forwarded = copy.deepcopy(new_forwarded)
+    indx = 0
+    for rule in new_forwarded["HTTP"]:
+        if rule["subdomain"]==subdomain:
+            break
+        indx+=1
+    new_forwarded["HTTP"].pop(indx)
+    dep.forwarded_ports=new_forwarded
+    db.session.commit()
+    zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+    record_id = cf.zones.dns_records.get(zone_id, params={"name":subdomain,"type":"A"})[0]["id"]
+    cf.zones.dns_records.delete(zone_id,record_id)
+    from tasks.remote_tasks import deletehttpforward
+    deletehttpforward.apply_async(args=[subdomain],queue=svr.domain_prefix)
+    
     return "OK"

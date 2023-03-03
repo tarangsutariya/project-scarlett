@@ -325,7 +325,19 @@ def addhttpforward(internal_ip,subdomain,port):
     
 
 
+@celery.task
+def deletehttpforward(subdomain):
+    caddy = Caddy(caddy_path)
+    headers = {
+        'Content-Type': 'text/caddyfile',
+    }
+    caddy.remove(subdomain)
+    
+    with open(caddy_path, 'rb') as f:
+        data = f.read()
 
+    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
+    
 
 # ##SHUTDOWN
 # from celery.signals import worker_shutdown
