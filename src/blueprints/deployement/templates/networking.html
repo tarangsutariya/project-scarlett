@@ -168,8 +168,8 @@
           </tr>
           {%for rule in dep.forwarded_ports["PORT"]%}
           <tr>
-          <td style="text-align: center"></td>
-          <td style="text-align: center"></td>
+          <td style="text-align: center">{{rule["external_port"]}}</td>
+          <td style="text-align: center">{{rule["internal_port"]}}</td>
           <td style="text-align: center"><img src="/static/delete.svg"></td>
          </tr>
              {% endfor %}  

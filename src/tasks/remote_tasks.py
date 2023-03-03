@@ -352,7 +352,7 @@ def addportforward(deploy_id,internal_port):
         kwargs.update(preexec_fn=os.setsid)
     else: 
         kwargs.update(start_new_session=True)
-    dep = deployments.query.filter_by(deploy_id=deploy_id)
+    dep = deployments.query.filter_by(deploy_id=deploy_id).first()
     socat_port = random.randint(20000,40000)
     while not tryPort(socat_port):
             socat_port = random.randint(20000,40000)
