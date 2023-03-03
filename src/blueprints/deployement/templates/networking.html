@@ -266,6 +266,26 @@
 <!--MODALS-->
 
 <script>
+
+function subvalid(str) {
+  var code, i, len;
+
+  for (i = 0, len = str.length; i < len; i++) {
+    code = str.charCodeAt(i);
+    if (((!(code > 47 && code < 58) && // numeric (0-9)
+        !(code > 64 && code < 91) && // upper alpha (A-Z)
+        !(code > 96 && code < 123)) ) ) { // lower alpha (a-z)
+
+      if( (str.charAt(i)=='-' && i!=0 && i!=len-1  )){
+        continue
+      }
+      return false;
+    }
+  }
+  return true;
+}
+
+
 function clearhttperror(){
   document.getElementById("addhttperror").innerText=""
 }
@@ -282,8 +302,12 @@ if(isNaN(port) || (port<0 && port>65000 )){
 }
 let hurl = document.getElementById("hurl")
 let domainn = document.getElementById("domain")
-
-
+if(hurl.value=="" || !subvalid(hurl.value)){
+  errp.innerText="sub domain can only contain 1-9 a-z"
+  return
+}
+// let response = await fetch('./ava/'+inp.value+'.'+domainn.value)
+// let restext = await response.text()
 
 
 }

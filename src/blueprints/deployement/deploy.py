@@ -165,7 +165,8 @@ def streamlogs(dep):
         logs =docker.container.logs(container_id,since=datetime.now()-last_time)
         total_sleep =0
         
-        while logs=="" and total_sleep<15:
+        while logs=="" and total_sleep<10:
+            print(total_sleep)
             total_sleep+=2
             logs =docker.container.logs(container_id,since=datetime.now()-last_time)
         response = {}
