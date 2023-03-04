@@ -381,7 +381,7 @@ Range slider
 
 <p id="submissionerror" style="color: red;display: none;">   Are you sure   </p>
 
-<button onclick="subdeploy()">Deploy</button>
+<button onclick="subdeploy()" id="deploybtn">Deploy</button>
 
 <br/><br/><br/>
 <br/><br/><br/>
@@ -757,6 +757,7 @@ toggleModal(event)
 
 async function subdeploy(){
   await new Promise(r => setTimeout(r,200));
+document.getElementById("deploybtn").setAttribute("aria-busy",true)
 let submissionerror = document.getElementById("submissionerror")
 submissionerror.innerText=""
 submissionerror.style.display="none"
@@ -766,6 +767,7 @@ let cpucores = document.getElementById("cpus").value
 if(cpucores==""){
   submissionerror.innerText="Specify cpu core count"
   submissionerror.style.display=""
+  document.getElementById("deploybtn").setAttribute("aria-busy",false)
   return
 }
 cpucores=parseInt(cpucores)
@@ -773,6 +775,7 @@ let ramsize = document.getElementById("rami").value
 if(ramsize==""){
   submissionerror.innerText="Specify ram size"
   submissionerror.style.display=""
+  document.getElementById("deploybtn").setAttribute("aria-busy",false)
   return
 }
 if(document.getElementById("rams").value=='MB'){
@@ -785,6 +788,7 @@ let disksize = document.getElementById("diski").value
 if(disksize==""){
   submissionerror.innerText="Specify disk size"
   submissionerror.style.display=""
+  document.getElementById("deploybtn").setAttribute("aria-busy",false)
   return
 }
 if(document.getElementById("disks").value=='GB'){
@@ -797,6 +801,7 @@ let subdom = document.getElementById("subdomainval").value
 if(subdom==""){
   submissionerror.innerText="Subdomain cannot be empty"
   submissionerror.style.display=""
+  document.getElementById("deploybtn").setAttribute("aria-busy",false)
   return
 }
 

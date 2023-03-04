@@ -270,8 +270,11 @@ def deleteport(dep):
         if rule["socat_pid"]==pid:
             break
         pid+=1
+    if indx == len(new_forwarded["PORT"]):
+        abort(418)
     new_forwarded["PORT"].pop(indx)
     dep.forwarded_ports = new_forwarded
+    db.session.commit()
     from tasks.remote_tasks import deleteportforward
     deleteportforward.apply_async(args=[pid],queue=svr.domain_prefix)
     

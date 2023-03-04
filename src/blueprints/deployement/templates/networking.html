@@ -288,7 +288,7 @@
       <a href="#confirm"
         role="button" style="background-color: red;border-color: red;"
         data-target="modal-deleteport"
-        onClick="confirmdeletehttp(event)" id="pconfirm">
+        onClick="deleteport()" id="pconfirm">
         Confirm
       </a>
     </footer>
@@ -390,8 +390,8 @@ pid_to_delete=pid
 document.getElementById("deleteconfirm").setAttribute('aria-busy','false')
 }
 
-function deleteport(){
-  document.getElementById("deleteconfirm").setAttribute('aria-busy','true')
+async function deleteport(){
+  document.getElementById("pconfirm").setAttribute('aria-busy','true')
   let res = await fetch('./deleteport',{
     method:"POST",
     headers: {
@@ -400,7 +400,7 @@ function deleteport(){
   body: JSON.stringify({"pid":pid_to_delete}),
   })
  let restext = await res.text()
-  document.getElementById("deleteconfirm").setAttribute('aria-busy','false')
+  document.getElementById("pconfirm").setAttribute('aria-busy','false')
   location.reload()
 }
 
@@ -544,8 +544,9 @@ document.getElementById("saveport").setAttribute('aria-busy','false')
 let restext = await rp.text()
 if (restext=="OK"){
   location.reload()
-}
+}else{
 errport.innerText="Some error occured please try again"
+}
 }
 
 </script>
