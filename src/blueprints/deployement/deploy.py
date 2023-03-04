@@ -256,3 +256,23 @@ def addportforward(dep):
     addportforward.apply_async(args=[dep.deploy_id,port],queue=svr.domain_prefix)
     
     return "OK"
+
+@deploy_bp.route("/<deploy_id>/deleteport",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def deleteport(dep):
+    pid = int(request.json["pid"])
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    new_forwarded = dict(dep.forwarded_ports)
+    new_forwarded = copy.deepcopy(new_forwarded)
+    indx = 0
+    for rule in new_forwarded["PORT"]:
+        if rule["socat_pid"]==pid:
+            break
+        pid+=1
+    new_forwarded["PORT"].pop(indx)
+    dep.forwarded_ports = new_forwarded
+    from tasks.remote_tasks import deleteportforward
+    deleteportforward.apply_async(args=[pid],queue=svr.domain_prefix)
+    
+    return "OK"

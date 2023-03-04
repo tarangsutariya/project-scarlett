@@ -368,6 +368,14 @@ def addportforward(deploy_id,internal_port):
     db.session.commit()
     #port_forwarded = {"socat_pid":socat.pid,"external_port":socat_port,"type":"SSH","internal_port":22}
 
+@celery.task
+def deleteportforward(socat_pid):
+    subprocess.run(["sudo","kill","-9",str(socat_pid)])
+    logger.info("KILLED PID %s"%(socat_pid))
+
+
+
+
 # ##SHUTDOWN
 # from celery.signals import worker_shutdown
 # def at_shoutdown(sender, **k):

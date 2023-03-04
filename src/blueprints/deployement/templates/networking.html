@@ -168,10 +168,18 @@
           </tr>
           {%for rule in dep.forwarded_ports["PORT"]%}
           <tr>
+          {% if rule["external_port"]==None %}
+          <td style="text-align: center"><a href="./networking">Processing</a></td>
+          {% else %}
           <td style="text-align: center">{{rule["external_port"]}}</td>
+          {% endif %}
           <td style="text-align: center">{{rule["internal_port"]}}</td>
-          <td style="text-align: center"><img src="/static/delete.svg"></td>
-         </tr>
+          {% if rule["socat_pid"]!=None %}
+          <td style="text-align: center"><img src="/static/delete.svg" style="cursor: pointer;" data-target="modal-deleteport" onclick="prepdelete({{rule['socat_pid']}});toggleModal(event)"></td>
+        {% else %}
+        <td></td> 
+        {% endif %}
+        </tr>
              {% endfor %}  
 
          <tr>
@@ -256,8 +264,36 @@
 </dialog>
 
 
-
-
+<!-- DELETE MODAL-->
+<dialog id="modal-deleteport">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-deleteport"
+      onClick="toggleModal(event)">
+    </a>
+    <h3>Are you sure?</h3>
+    <p>
+      Are you sure you want to delete the port forwarding rules?
+    </p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-deleteport"
+        onClick="toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button" style="background-color: red;border-color: red;"
+        data-target="modal-deleteport"
+        onClick="confirmdeletehttp(event)" id="pconfirm">
+        Confirm
+      </a>
+    </footer>
+  </article>
+</dialog>
 
 
 
@@ -347,6 +383,30 @@
 <script>
 
 subdomain_to_delete = ""
+pid_to_delete = null
+
+function prepdelete(pid){
+pid_to_delete=pid
+document.getElementById("deleteconfirm").setAttribute('aria-busy','false')
+}
+
+function deleteport(){
+  document.getElementById("deleteconfirm").setAttribute('aria-busy','true')
+  let res = await fetch('./deleteport',{
+    method:"POST",
+    headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({"pid":pid_to_delete}),
+  })
+ let restext = await res.text()
+  document.getElementById("deleteconfirm").setAttribute('aria-busy','false')
+  location.reload()
+}
+
+
+
+
 
 function deletehttp(e,subd){
   document.getElementById("deleteconfirm").disabled = false
