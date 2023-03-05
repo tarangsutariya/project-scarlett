@@ -26,12 +26,12 @@ from celery.exceptions import Ignore
 
 from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path,webhook_path
 from config import cloudflare_api_key
-from manage_deploys import redeloy,gitfetch,dockerrebuild,deletedeploy
+from .manage_deploys import redeloy,gitfetch,dockerrebuild,deletedeploy
 
 cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 logger = get_task_logger(__name__)
 
-@celery.tasks
+@celery.task
 def process_webhook(branch_name,commit_hash,repo_id):
     deploys = deployments.query.filter_by(branch_name=branch_name,repo_id=repo_id).all()
     for dep in deploys:
