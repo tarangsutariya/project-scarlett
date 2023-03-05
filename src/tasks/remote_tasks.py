@@ -295,12 +295,15 @@ def initdeloy(self,deploy_id):
     dep.forwarded_ports = {"SSH":[port_forwarded]}
     dep.forwarded_ports["HTTP"]=[]
     dep.forwarded_ports["PORT"]=[]
-    docker = python_on_whales.DockerClient(host="ssh://root@%s"%(firecracker_ip))
-    containers = list(docker.ps())
-    contn = {}
-    for container in containers:
-        contn[container.id]=container.name[5:-2]
-    dep.containers = contn
+    try:
+        docker = python_on_whales.DockerClient(host="ssh://root@%s"%(firecracker_ip))
+        containers = list(docker.ps())
+        contn = {}
+        for container in containers:
+            contn[container.id]=container.name[5:-2]
+        dep.containers = contn
+    except:
+        dep.containers = []
     db.session.commit()
 
     
