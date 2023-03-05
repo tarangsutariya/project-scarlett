@@ -88,9 +88,11 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
     dep.commit_hash = g.get_repo(dep.repo_id).get_branch(dep.branch_name).commit.sha
     dep.last_deployment_status = "rebuilding"
     db.session.commit()
+    logger.info("TRYING COMPOSE DOWN")
     try:
         with Connection("root@"+dep.internal_ip) as ssh_connection:
                 ssh_connection("cd repo && docker compose down")
+                logger.info("TRYING COMPOSE DOWN now")
                 if use_cache:
                     ssh_connection.run("cd repo && docker compose build")
                 else:
@@ -98,6 +100,7 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
                 ssh_connection("cd repo && docker compose up -d --force-recreate")
         dep.last_deployment_status = "deployed"
     except:    
+        logger.info("ERROR PROBABLY")
         dep.last_deployment_status = "dockercomposeerror"
     try:
         docker = python_on_whales.DockerClient(host="ssh://root@%s"%(dep.internal_ip))
