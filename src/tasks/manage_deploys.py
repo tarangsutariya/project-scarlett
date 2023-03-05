@@ -158,6 +158,7 @@ def deletedeploy(self,deploy_id,complete_delete=False):
     response = requests.post('http://localhost:2019/load', headers=headers, data=data)
     if complete_delete:
         db.session.delete(dep)
+    db.session.commit()
 
 
 ###REDEPLOY
