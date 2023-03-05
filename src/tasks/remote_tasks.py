@@ -291,7 +291,7 @@ def initdeloy(self,deploy_id):
     dep.tap_device=tap_device
     dep.internal_ip=firecracker_ip
     dep.firecracker_ip=firecracker_pid
-    dep.firecracker_socket=firecracker_socket
+    # dep.firecracker_socket=firecracker_socket
     dep.forwarded_ports = {"SSH":[port_forwarded]}
     dep.forwarded_ports["HTTP"]=[]
     dep.forwarded_ports["PORT"]=[]

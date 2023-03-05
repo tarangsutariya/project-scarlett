@@ -91,7 +91,7 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
     logger.info("TRYING COMPOSE DOWN")
     try:
         with Connection("root@"+dep.internal_ip) as ssh_connection:
-                ssh_connection("cd repo && docker compose down")
+                ssh_connection.run("cd repo && docker compose down")
                 logger.info("TRYING COMPOSE DOWN now")
                 if use_cache:
                     ssh_connection.run("cd repo && docker compose build")
@@ -364,7 +364,7 @@ def redeloy(self,deploy_id):
     dep.tap_device=tap_device
     dep.internal_ip=firecracker_ip
     dep.firecracker_ip=firecracker_pid
-    dep.firecracker_socket=firecracker_socket
+    # dep.firecracker_socket=firecracker_socket
     ###
     new_forwarded = dict(dep.forwarded_ports)
     new_forwarded = copy.deepcopy(new_forwarded)
