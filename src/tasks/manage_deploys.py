@@ -20,7 +20,7 @@ import CloudFlare
 from .helpers.utils import tryPort,vm_usage
 import python_on_whales
 celery = make_celery()
-
+import copy
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 
@@ -136,6 +136,22 @@ def deletedeploy(self,deploy_id,complete_delete=False):
     headers = {
         'Content-Type': 'text/caddyfile',
     }
+
+    caddy.remove(dep.primary_domain)
+    caddy.remove(dep.secondary_domain)
+    if complete_delete:
+        subsplit = dep.primary_domain.rsplit(".",2)
+        curr_domain = subsplit[-2]+'.'+subsplit[-1]
+        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.primary_domain,"type":"A"})[0]["id"]
+        cf.zones.dns_records.delete(zone_id,record_id)
+        #
+        subsplit = dep.secondary_domain.rsplit(".",2)
+        curr_domain = subsplit[-2]+'.'+subsplit[-1]
+        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.secondary_domain,"type":"A"})[0]["id"]
+        cf.zones.dns_records.delete(zone_id,record_id)
+
     with open(caddy_path, 'rb') as f:
         data = f.read()
 
@@ -151,10 +167,9 @@ def redeloy(self,deploy_id):
     
     
     freespace = round(psutil.disk_usage('/').free/1073741824,2)-1
-    total_ram = int(psutil.virtual_memory().total/1048576)
-    number_of_cores = psutil.cpu_count()
+   
     dep = deployments.query.filter_by(deploy_id=deploy_id).first()
-    if dep == None or number_of_cores<dep.cpu_allocated or total_ram < dep.ram_allocated or freespace < dep.disk_allocated:
+    if dep == None or freespace < dep.disk_allocated:
         self.update_state(state='FAILURE', meta={'curr': 9, 'total': 9,"message":"Server does not have free resouces to serve this request"})
         raise Ignore()
     ##Preparing rootfs
@@ -337,23 +352,16 @@ def redeloy(self,deploy_id):
         prefix_s+='.'
     prefix_s=prefix_s[:-1]
     svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
-    zone_id = cf.zones.get(params = {'name':base_domain_p})[0]["id"]
-    cf.zones.dns_records.post(zone_id, data={"name":prefix_p,"type":"A","content":svr.ip_address})
+    ##DONT NEED TO UPDATE DNS RECORD
+    # zone_id = cf.zones.get(params = {'name':base_domain_p})[0]["id"]
+    # cf.zones.dns_records.post(zone_id, data={"name":prefix_p,"type":"A","content":svr.ip_address})
 
-    zone_id = cf.zones.get(params = {'name':base_domain_s})[0]["id"]
-    cf.zones.dns_records.post(zone_id, data={"name":prefix_s,"type":"A","content":svr.ip_address})
+    # zone_id = cf.zones.get(params = {'name':base_domain_s})[0]["id"]
+    # cf.zones.dns_records.post(zone_id, data={"name":prefix_s,"type":"A","content":svr.ip_address})
     caddy = Caddy(caddy_path)
     caddy.add(dep.primary_domain,firecracker_ip,80)
-    headers = {
-        'Content-Type': 'text/caddyfile',
-    }
     caddy.add(dep.secondary_domain,firecracker_ip,80)
-
-
-    with open(caddy_path, 'rb') as f:
-        data = f.read()
-
-    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
+    
     
     
     self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"Performing clean-up"})
@@ -394,9 +402,41 @@ def redeloy(self,deploy_id):
     dep.internal_ip=firecracker_ip
     dep.firecracker_ip=firecracker_pid
     dep.firecracker_socket=firecracker_socket
-    dep.forwarded_ports = {"SSH":[port_forwarded]}
-    dep.forwarded_ports["HTTP"]=[]
-    dep.forwarded_ports["PORT"]=[]
+    ###
+    new_forwarded = dict(dep.forwarded_ports)
+    new_forwarded = copy.deepcopy(new_forwarded)
+    new_forwarded["SSH"]={"SSH":[port_forwarded]}
+    for rule in new_forwarded["HTTP"]:
+        caddy.add(rule["subdomain"],firecracker_ip,rule["internal_port"])
+    
+    headers = {
+        'Content-Type': 'text/caddyfile',
+    }
+    with open(caddy_path, 'rb') as f:
+        data = f.read()
+
+    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
+    kwargs = {}
+    if platform.system() == 'Windows':
+      
+        CREATE_NEW_PROCESS_GROUP = 0x00000200  
+        DETACHED_PROCESS = 0x00000008         
+        kwargs.update(creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, close_fds=True)  
+    elif sys.version_info < (3, 2): 
+        kwargs.update(preexec_fn=os.setsid)
+    else: 
+        kwargs.update(start_new_session=True)
+    for rule in new_forwarded["PORT"]:
+        socat_port = random.randint(20000,40000)
+        while not tryPort(socat_port):
+                socat_port = random.randint(20000,40000)
+        socat = Popen(["socat","TCP4-LISTEN:%s,fork"%(socat_port),"TCP4:%s:%s"%(firecracker_ip,rule["internal_port"])], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
+        rule["external_port"]=socat_port
+        rule["socat_pid"]=socat.pid
+
+
+    dep.forwarded_ports = new_forwarded
+    
     try:
         docker = python_on_whales.DockerClient(host="ssh://root@%s"%(firecracker_ip))
         containers = list(docker.ps())
