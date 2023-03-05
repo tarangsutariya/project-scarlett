@@ -289,5 +289,5 @@ def reclonetest(dep):
     # redeloy.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix)
     from tasks.manage_deploys import deletedeploy
     deletedeploy.apply_async(args=[dep.deploy_id,True],queue=svr.domain_prefix)
-    return "OK"
+    return str(dep.firecracker_pid)
     

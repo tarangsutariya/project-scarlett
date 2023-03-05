@@ -121,7 +121,7 @@ def initdeloy(self,deploy_id):
     ###########################
     firecracker_pid = p.pid
     
-    #logger.info("Firecracker_pid"+str(firecracker_pid))
+    logger.info("Firecracker_pid"+str(firecracker_pid))
     fire_kernel_json = {
             "kernel_image_path": k_path,
             "boot_args": "console=ttyS0 reboot=k panic=1 pci=off"
@@ -310,6 +310,7 @@ def initdeloy(self,deploy_id):
     
     self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"Done"})
     logger.info(firecracker_ip)
+    logger.info(firecracker_pid)
     logger.info("DONE")
 
 

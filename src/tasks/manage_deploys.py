@@ -97,7 +97,7 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
                     ssh_connection.run("cd repo && docker compose build")
                 else:
                     ssh_connection.run("cd repo && docker compose build --no-cache")
-                ssh_connection("cd repo && docker compose up -d --force-recreate")
+                ssh_connection.run("cd repo && docker compose up -d --force-recreate")
         dep.last_deployment_status = "deployed"
     except:    
         logger.info("ERROR PROBABLY")
