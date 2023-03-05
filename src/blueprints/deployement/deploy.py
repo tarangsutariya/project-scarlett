@@ -286,5 +286,6 @@ def deleteport(dep):
 def reclonetest(dep):
     svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
     from tasks.manage_deploys import gitfetch
-    gitfetch.async_apply(args=[dep.deploy_id],queue=svr.domain_prefix)
+    gitfetch.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix)
+    return "OK"
     

@@ -56,7 +56,7 @@ def update_env_variables(deploy_id):
 
 
 @celery.task(bind=True)
-def gitfetch(deploy_id):
+def gitfetch(self,deploy_id):
     dep = deployments.query.filter_by(deploy_id=deploy_id).first()
     tokenn = users.query.filter_by(user_id=dep.user_id).first().github_oauth_token
     if dep.accessed_by_org_token == True:
@@ -70,7 +70,7 @@ def gitfetch(deploy_id):
     db.session.commit()
 
 @celery.task(bind=True)
-def dockerrebuild(deploy_id,pullchange=False,use_cache= False):
+def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
     dep = deployments.query.filter_by(deploy_id=deploy_id).first()
     if pullchange:
         
