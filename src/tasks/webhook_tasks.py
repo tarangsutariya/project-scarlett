@@ -46,7 +46,7 @@ def process_webhook(branch_name,commit_hash,repo_id):
         elif dep.accessed_by_custom_token == True:
             tokenn = dep.custom_token
         g = Github(tokenn)
-        b = g.get_branch().commit.sha
+        b = g.get_repo(repo_id).get_branch(dep.branch_name).commit.sha
         if dep.initial_deploy:
             continue
         if b == dep.commit_hash:

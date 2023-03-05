@@ -11,6 +11,7 @@ def github_webhook():
     branch = request.json["ref"].split('/')[-1]
     repo_id = request.json["repository"]["id"]
     latest_commit = request.json["after"]
-
+    from tasks.webhook_tasks import process_webhook
+    process_webhook.apply_async(args=[branch,latest_commit,repo_id])
     return "OK"
     

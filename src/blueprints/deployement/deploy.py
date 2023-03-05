@@ -141,7 +141,7 @@ def edit_env(dep):
     env_vars = {}
     for v in varss:
         env_vars[v[0]]=v[1]
-    dep.env_variables = env_vars
+    dep.env_variables = dict(env_vars)
     db.session.commit()
     from tasks.manage_deploys import update_env_variables
     prefix = admin_servers.query.filter_by(server_id=dep.server_id).first().domain_prefix
@@ -169,7 +169,7 @@ def streamlogs(dep):
         total_sleep =0
         
         while logs=="" and total_sleep<10:
-            print(total_sleep)
+            
             total_sleep+=2
             logs =docker.container.logs(container_id,since=datetime.now()-last_time)
         response = {}

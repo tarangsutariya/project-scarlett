@@ -90,6 +90,7 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
     db.session.commit()
     try:
         with Connection("root@"+dep.internal_ip) as ssh_connection:
+                ssh_connection("cd repo && docker compose down")
                 if use_cache:
                     ssh_connection.run("cd repo && docker compose build")
                 else:
