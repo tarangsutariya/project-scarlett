@@ -120,10 +120,27 @@
           <div id="contentblock">
           <label>Redployment process </label>
           <select id="reloadtype" autocomplete="off">
+            {% if dep.redeploy_process == "hotreload" %}
+            <option value="hotreload" selected > Hot Reload </option>
+            {% else %}
             <option value="hotreload"> Hot Reload </option>
+            {% endif %}
+            {% if dep.redeploy_process == "rebuild" %}
+            <option value="rebuild" selected > Rebuild </option>
+            {% else %}
             <option value="rebuild"> Rebuild </option>
+            {% endif %}
+            {% if dep.redeploy_process == "redeploy" %}
+            <option value="redeploy" selected> Redeploy </option>
+            {% else %}
             <option value="redeploy"> Redeploy </option>
+            {% endif %}
+
+            {% if dep.redeploy_process == "manual" %}
+            <option value="manual" selected>Manual</option>
+            {% else %}
             <option value="manual">Manual</option>
+            {% endif %}
           </select>
           
            

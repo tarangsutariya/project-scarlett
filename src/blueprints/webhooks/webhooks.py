@@ -8,5 +8,9 @@ webhook_bp = Blueprint("webhooks",__name__,template_folder="templates",static_fo
 
 @webhook_bp.route("/",methods=["POST"])
 def github_webhook():
-    print(request.json)
+    branch = request.json["ref"].split('/')[-1]
+    repo_id = request.json["repository"]["id"]
+    latest_commit = request.json["after"]
+
     return "OK"
+    
