@@ -282,7 +282,7 @@ def initdeloy(self,deploy_id):
     dep.deploy_path = str_path
     if compose_success:
         dep.health="healthy"
-        dep.last_deployment_status="Deployed"
+        dep.last_deployment_status="deployed"
         dep.deployment_process_desc="Successfully deployed"
     else:
         dep.health="failure"
