@@ -363,7 +363,7 @@ def redeloy(self,deploy_id):
         dep.deployment_process_desc="docker compose failed"
     dep.tap_device=tap_device
     dep.internal_ip=firecracker_ip
-    dep.firecracker_ip=firecracker_pid
+    dep.firecracker_pid=firecracker_pid
     # dep.firecracker_socket=firecracker_socket
     ###
     new_forwarded = dict(dep.forwarded_ports)
