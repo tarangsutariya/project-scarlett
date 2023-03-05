@@ -406,7 +406,7 @@ def redeloy(self,deploy_id):
     ###
     new_forwarded = dict(dep.forwarded_ports)
     new_forwarded = copy.deepcopy(new_forwarded)
-    new_forwarded["SSH"]={"SSH":[port_forwarded]}
+    new_forwarded["SSH"]=[port_forwarded]
     for rule in new_forwarded["HTTP"]:
         caddy.add(rule["subdomain"],firecracker_ip,rule["internal_port"])
     
