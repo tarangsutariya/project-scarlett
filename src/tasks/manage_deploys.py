@@ -124,7 +124,7 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
 @celery.task(bind=True)
 def redeloy(self,deploy_id):
     
-    self.update_state(state='PENDING', meta={'curr': 1, 'total': 9,"message":"verifying deployment request"})
+    self.update_state(state='PENDING', meta={'curr': 1, 'total': 5,"message":"redeploying"})
     
     
     freespace = round(psutil.disk_usage('/').free/1073741824,2)-1
@@ -136,7 +136,7 @@ def redeloy(self,deploy_id):
         self.update_state(state='FAILURE', meta={'curr': 9, 'total': 9,"message":"Server does not have free resouces to serve this request"})
         raise Ignore()
     ##Preparing rootfs
-    self.update_state(state='PENDING', meta={'curr': 2, 'total': 9,"message":"coping rootfs and kernel image"})
+    self.update_state(state='PENDING', meta={'curr': 2, 'total': 5,"message":"starting vm"})
     ###SELECTING TAP DEVICE AND IPRANGE
     second_octet_start = int(vlan_ip_subnet_start.split(".")[1])+1
     second_octet_end = int(vlan_ip_subnet_end.split(".")[1])
@@ -173,7 +173,7 @@ def redeloy(self,deploy_id):
         networkinitscript.write("ip route add default via %s && echo nameserver 8.8.8.8 > /etc/resolv.conf"%(tap_ip))
     subprocess.run(["sudo","umount",temp_folder])
     
-    self.update_state(state='PENDING', meta={'curr': 3, 'total': 9,"message":"Starting Firecracker"})
+    #self.update_state(state='PENDING', meta={'curr': 3, 'total': 9,"message":"Starting Firecracker"})
 
     subprocess.run(["sudo","ip","tuntap","add",tap_device,"mode","tap","user",str(uid),"group",str(gid)])
     subprocess.run(["sudo","ip","addr","add",tap_ip+"/24","dev",tap_device])
@@ -184,7 +184,7 @@ def redeloy(self,deploy_id):
     subprocess.run(["sudo","iptables","-A","FORWARD","-i",tap_device,"-o",default_network_interface,"-j","ACCEPT"])
     os.rmdir(temp_folder)
 
-    self.update_state(state='PENDING', meta={'curr': 4, 'total': 9,"message":"Starting Firecracker"})
+   # self.update_state(state='PENDING', meta={'curr': 4, 'total': 9,"message":"Starting Firecracker"})
     ##LAUNChING FIRECRACKER PROCESS
     kwargs = {}
     if platform.system() == 'Windows':
@@ -251,7 +251,7 @@ def redeloy(self,deploy_id):
         for envs in dep.env_variables:
             envf.write("%s=%s\n"%(str(envs),str(dep.env_variables[envs])))
     logger.info(firecracker_ip)
-    self.update_state(state='PENDING', meta={'curr': 5, 'total': 9,"message":"Git cloning"})
+    self.update_state(state='PENDING', meta={'curr': 3, 'total': 5,"message":"Git Cloning"})
     ssh_connect_retries = 0
     while ssh_connect_retries < 5:
         try:
@@ -289,7 +289,7 @@ def redeloy(self,deploy_id):
         ssh_connection.run("cd repo && git checkout %s"%(dep.branch_name))
         ssh_connection.put("/tmp/env",'repo/.env')
     logger.info("git clone done")
-    self.update_state(state='PENDING', meta={'curr': 6, 'total': 9,"message":"running docker compose up"})
+    self.update_state(state='PENDING', meta={'curr': 4, 'total': 5,"message":"building docker image"})
     compose_success = True
     try:
         with Connection("root@"+firecracker_ip) as ssh_connection:
@@ -297,7 +297,7 @@ def redeloy(self,deploy_id):
     except:
         compose_success = False
 
-    self.update_state(state='PENDING', meta={'curr': 7, 'total': 9,"message":"Configuring network rules"})
+    #self.update_state(state='PENDING', meta={'curr': 7, 'total': 9,"message":"Configuring network rules"})
     
     p_cps = dep.primary_domain.split(".")
     base_domain_p = p_cps[-2]+"."+ p_cps[-1]
@@ -327,7 +327,7 @@ def redeloy(self,deploy_id):
     
     
     
-    self.update_state(state='PENDING', meta={'curr': 8, 'total': 9,"message":"Performing clean-up"})
+    self.update_state(state='PENDING', meta={'curr': 5, 'total': 5,"message":"Done"})
     #####
     kwargs = {}
     if platform.system() == 'Windows':

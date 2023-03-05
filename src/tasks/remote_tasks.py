@@ -310,7 +310,7 @@ def initdeloy(self,deploy_id):
     
     self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"Done"})
     logger.info(firecracker_ip)
-    logger.info(firecracker_pid)
+    # logger.info(firecracker_pid)
     logger.info("DONE")
 
 
