@@ -66,24 +66,27 @@ def gitfetch(self,deploy_id):
     
     with Connection("root@"+dep.internal_ip) as ssh_connection:
         ssh_connection.run("cd repo && git pull https://%s@%s %s"%(tokenn,"github.com/"+dep.repo_owner+"/"+dep.repo_name,dep.branch_name))
+    g = Github(tokenn)
+    dep.commit_hash = g.get_repo(dep.repo_id).get_branch(dep.branch_name).commit.sha
     dep.last_deployment_status = "deployed"
     db.session.commit()
 
 @celery.task(bind=True)
 def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
     dep = deployments.query.filter_by(deploy_id=deploy_id).first()
+    tokenn = users.query.filter_by(user_id=dep.user_id).first().github_oauth_token
+    if dep.accessed_by_org_token == True:
+        tokenn = admin_github_tokens.query.filter_by(token_id=dep.org_token_id).first().github_token
+    elif dep.accessed_by_custom_token == True:
+        tokenn = dep.custom_token
+    g = Github(tokenn)
+    
     if pullchange:
-        
-        tokenn = users.query.filter_by(user_id=dep.user_id).first().github_oauth_token
-        if dep.accessed_by_org_token == True:
-            tokenn = admin_github_tokens.query.filter_by(token_id=dep.org_token_id).first().github_token
-        elif dep.accessed_by_custom_token == True:
-            tokenn = dep.custom_token
-        
         with Connection("root@"+dep.internal_ip) as ssh_connection:
             ssh_connection.run("cd repo && git pull https://%s@%s %s"%(tokenn,"github.com/"+dep.repo_owner+"/"+dep.repo_name,dep.branch_name))
     ###REBUILDING 
-    dep.last_deployment_status = "rebuilding docker"
+    dep.commit_hash = g.get_repo(dep.repo_id).get_branch(dep.branch_name).commit.sha
+    dep.last_deployment_status = "rebuilding"
     db.session.commit()
     try:
         with Connection("root@"+dep.internal_ip) as ssh_connection:
@@ -109,67 +112,22 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
 
 
 
-@celery.task(bind=True)
-def deletedeploy(self,deploy_id,complete_delete=False):
-    dep = deployments.query.filter_by(deploy_id=deploy_id).first()
-    subprocess.run(["sudo","kill","-9",str(dep.firecracker_pid)])
-    subprocess.run(["sudo","rm","-r",dep.deploy_path])
-    firecracker_socket = "/tmp/firecracker"+dep.tap_device[3:]+".socket"
-    subprocess.run(["sudo","rm",firecracker_socket])
-    subprocess.run(["sudo","ip","link","set",dep.tap_device,"down"])
-    subprocess.run(["sudo","ip","link","delete",dep.tap_device])
-    for rule in dep.forwarded_ports["PORT"]:
-        if rule["socat_pid"]==None:
-            continue
-        socat_pid = rule["socat_pid"]
-        subprocess.run(["sudo","kill","-9",str(socat_pid)])
-    subprocess.run(["sudo","kill","-9",str(dep.forwarded_ports["SSH"][0]["socat_pid"])])
-    caddy = Caddy(caddy_path)
-    for rule in dep.forwarded_ports["HTTP"]:
-        caddy.remove(rule["subdomain"])
-        if complete_delete:
-            subsplit = rule["subdomain"].rsplit(".",2)
-            curr_domain = subsplit[-2]+'.'+subsplit[-1]
-            zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-            record_id = cf.zones.dns_records.get(zone_id, params={"name":rule["subdomain"],"type":"A"})[0]["id"]
-            cf.zones.dns_records.delete(zone_id,record_id)
-    headers = {
-        'Content-Type': 'text/caddyfile',
-    }
 
-    caddy.remove(dep.primary_domain)
-    caddy.remove(dep.secondary_domain)
-    if complete_delete:
-        subsplit = dep.primary_domain.rsplit(".",2)
-        curr_domain = subsplit[-2]+'.'+subsplit[-1]
-        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.primary_domain,"type":"A"})[0]["id"]
-        cf.zones.dns_records.delete(zone_id,record_id)
-        #
-        subsplit = dep.secondary_domain.rsplit(".",2)
-        curr_domain = subsplit[-2]+'.'+subsplit[-1]
-        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.secondary_domain,"type":"A"})[0]["id"]
-        cf.zones.dns_records.delete(zone_id,record_id)
-
-    with open(caddy_path, 'rb') as f:
-        data = f.read()
-
-    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
-    if complete_delete:
-        db.session.delete(dep)
-    db.session.commit()
+    
 
 
 ###REDEPLOY
 @celery.task(bind=True)
 def redeloy(self,deploy_id):
+    
     self.update_state(state='PENDING', meta={'curr': 1, 'total': 9,"message":"verifying deployment request"})
     
     
     freespace = round(psutil.disk_usage('/').free/1073741824,2)-1
    
     dep = deployments.query.filter_by(deploy_id=deploy_id).first()
+    dep.last_deployment_status = "redeploying"
+    db.session.commit()
     if dep == None or freespace < dep.disk_allocated:
         self.update_state(state='FAILURE', meta={'curr': 9, 'total': 9,"message":"Server does not have free resouces to serve this request"})
         raise Ignore()
@@ -310,7 +268,7 @@ def redeloy(self,deploy_id):
     try:
         g = Github(tokenn)
         repo = g.get_repo(dep.repo_id)
-        dep.commit_hash = list(repo.get_commits())[0].sha
+        dep.commit_hash = repo.get_branch(dep.branch_name).commit.sha
         hooks = repo.get_hooks()
         
         for hook in hooks:
@@ -454,3 +412,61 @@ def redeloy(self,deploy_id):
     self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"Done"})
     logger.info(firecracker_ip)
     logger.info("DONE")
+
+
+@celery.task(bind=True)
+def deletedeploy(self,deploy_id,complete_delete=False,redeploy_after_delete=False):
+    
+    dep = deployments.query.filter_by(deploy_id=deploy_id).first()
+    dep.last_deployment_status = "deleting"
+    db.session.commit()
+    subprocess.run(["sudo","kill","-9",str(dep.firecracker_pid)])
+    subprocess.run(["sudo","rm","-r",dep.deploy_path])
+    firecracker_socket = "/tmp/firecracker"+dep.tap_device[3:]+".socket"
+    subprocess.run(["sudo","rm",firecracker_socket])
+    subprocess.run(["sudo","ip","link","set",dep.tap_device,"down"])
+    subprocess.run(["sudo","ip","link","delete",dep.tap_device])
+    for rule in dep.forwarded_ports["PORT"]:
+        if rule["socat_pid"]==None:
+            continue
+        socat_pid = rule["socat_pid"]
+        subprocess.run(["sudo","kill","-9",str(socat_pid)])
+    subprocess.run(["sudo","kill","-9",str(dep.forwarded_ports["SSH"][0]["socat_pid"])])
+    caddy = Caddy(caddy_path)
+    for rule in dep.forwarded_ports["HTTP"]:
+        caddy.remove(rule["subdomain"])
+        if complete_delete:
+            subsplit = rule["subdomain"].rsplit(".",2)
+            curr_domain = subsplit[-2]+'.'+subsplit[-1]
+            zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+            record_id = cf.zones.dns_records.get(zone_id, params={"name":rule["subdomain"],"type":"A"})[0]["id"]
+            cf.zones.dns_records.delete(zone_id,record_id)
+    headers = {
+        'Content-Type': 'text/caddyfile',
+    }
+
+    caddy.remove(dep.primary_domain)
+    caddy.remove(dep.secondary_domain)
+    if complete_delete:
+        subsplit = dep.primary_domain.rsplit(".",2)
+        curr_domain = subsplit[-2]+'.'+subsplit[-1]
+        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.primary_domain,"type":"A"})[0]["id"]
+        cf.zones.dns_records.delete(zone_id,record_id)
+        #
+        subsplit = dep.secondary_domain.rsplit(".",2)
+        curr_domain = subsplit[-2]+'.'+subsplit[-1]
+        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.secondary_domain,"type":"A"})[0]["id"]
+        cf.zones.dns_records.delete(zone_id,record_id)
+
+    with open(caddy_path, 'rb') as f:
+        data = f.read()
+
+    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
+    if complete_delete:
+        db.session.delete(dep)
+    if redeploy_after_delete:
+        svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+        db.celery_process_id  = str(redeloy.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix))
+    db.session.commit()

@@ -192,7 +192,7 @@ def initdeloy(self,deploy_id):
     try:
         g = Github(tokenn)
         repo = g.get_repo(dep.repo_id)
-        dep.commit_hash = list(repo.get_commits())[0].sha
+        dep.commit_hash = repo.get_branch(dep.branch_name).commit.sha
         hooks = repo.get_hooks()
         
         for hook in hooks:

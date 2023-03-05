@@ -26,7 +26,7 @@ from celery.exceptions import Ignore
 
 from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path,webhook_path
 from config import cloudflare_api_key
-
+from manage_deploys import redeloy,gitfetch,dockerrebuild,deletedeploy
 
 cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 logger = get_task_logger(__name__)
@@ -44,7 +44,22 @@ def process_webhook(branch_name,commit_hash,repo_id):
             tokenn = dep.custom_token
         g = Github(tokenn)
         b = g.get_branch().commit.sha
+        if dep.initial_deploy:
+            continue
         if b == dep.commit_hash:
             continue
         if dep.redeploy_process == "manual":
             continue
+        svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+        if dep.redeploy_process == "hotreload":
+            dep.celery_process_id = str(gitfetch.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix))
+            dep.last_deployment_status = "fetching changes"
+        elif dep.redeploy_process == "rebuild":
+            dep.celery_process_id = str(dockerrebuild.apply_async(args=[dep.deploy_id,True,False],queue=svr.domain_prefix))
+            dep.last_deployment_status = "fetching changes"
+        elif dep.redeploy_process == "redeploy":
+            dep.celery_process_id = str(deletedeploy.apply_async(args=[dep.deploy_id,False,True],queue=svr.domain_prefix))
+            dep.last_deployment_status = "fetching changes"
+        db.session.commit()
+        
+        
