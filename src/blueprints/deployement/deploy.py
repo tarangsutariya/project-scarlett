@@ -125,9 +125,9 @@ def deployment_networking(dep):
 @user_owns_deployment
 def deployment_notifications(dep):
     
-    emails = dep.email_notify["emails"]
-    pushovers = dep.pushover_notify["pushovers"]
-    slack = dep.slack_notify["slack"]
+    emails = dep.notifications["email"]
+    pushovers = dep.notifications["pushover"]
+    slack = dep.notifications["slack"]
     ########NOTIFICATIONS####
     
 
