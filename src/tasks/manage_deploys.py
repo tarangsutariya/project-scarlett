@@ -200,7 +200,8 @@ def redeloy(self,deploy_id):
     p = Popen(["sudo","firecracker","--api-sock",firecracker_socket], stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
     ###########################
     firecracker_pid = p.pid
-    
+    dep.last_deployment_status = "statring vm"
+    db.session.commit()
     #logger.info("Firecracker_pid"+str(firecracker_pid))
     fire_kernel_json = {
             "kernel_image_path": k_path,
@@ -289,6 +290,8 @@ def redeloy(self,deploy_id):
         ssh_connection.run("cd repo && git checkout %s"%(dep.branch_name))
         ssh_connection.put("/tmp/env",'repo/.env')
     logger.info("git clone done")
+    dep.last_deployment_status = "building docker image"
+    db.session.commit()
     self.update_state(state='PENDING', meta={'curr': 4, 'total': 5,"message":"building docker image"})
     compose_success = True
     try:

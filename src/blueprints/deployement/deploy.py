@@ -336,27 +336,15 @@ def redeploydep(dep):
 @user_owns_deployment
 def depstatus(dep):
     last_status  =request.json["last_status"]
-    if dep.last_deployment_status != "redeploying":
-        timeout = 0
-        while last_status == dep.last_deployment_status and timeout<20:
-            time.sleep(2)
-            timeout+=2
-            db.session.refresh(dep)
-    else:
-        from tasks.remote_tasks import celery
-        timeout = 0
-        while celery.AsyncResult(dep.celery_process_id).status!='SUCCESS' and  (not(celery.AsyncResult(dep.celery_process_id).failed())) and celery.AsyncResult(dep.celery_process_id).info["message"]==last_status:
-            time.sleep(2)
-            timeout+=2
-        response={}
-        try:
-            response["status"]=celery.AsyncResult(dep.celery_process_id).info["message"]
-        except:
-            response["status"]=dep.last_deployment_status
-
-
+    
+    timeout = 0
+    while last_status == dep.last_deployment_status and timeout<20:
+        time.sleep(2)
+        timeout+=2
+        db.session.refresh(dep)
     response={}
     response["status"]=dep.last_deployment_status
+
     return jsonify(response)
 
 

@@ -347,6 +347,9 @@ function renderstatus(data){
   status_field.innerText=data["status"]
   if(data["status"]=="deployed"){
     status_field.setAttribute("aria-busy",false)
+    document.getElementById("redeploybtn").disabled=false
+    document.getElementById("rebuildbtn").disabled=false
+    document.getElementById("refetchbtn").disabled=false
   }else{
     status_field.setAttribute("aria-busy",true)
   }
