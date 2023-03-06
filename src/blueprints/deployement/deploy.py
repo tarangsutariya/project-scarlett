@@ -4,7 +4,7 @@ from blueprints.users.login_manager import user_login_required
 import time
 from models import users,db
 from blueprints.admin.models import admin_user,admin_servers
-from .models import deployments
+from .models import deployments,delete_deploy
 from config import domains
 import python_on_whales
 from ansi2html import Ansi2HTMLConverter
@@ -25,6 +25,9 @@ def user_owns_deployment(f):
         deploy=deployments.query.filter_by(deploy_id=deploy_id).first_or_404()
         if session["user_userid"]!=deploy.user_id:
             return redirect(url_for("users.user_dashboard"))
+        if delete_deploy.query.filter_by(deploy_id=deploy_id).first()!=None:
+            return "This deployment is being deleted "
+
         if deploy.initial_deploy==True:
             from tasks.remote_tasks import celery
             try:
@@ -287,7 +290,37 @@ def reclonetest(dep):
     svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
     # from tasks.manage_deploys import redeloy
     # redeloy.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix)
+    delete_record = delete_deploy(deploy_id=dep.deploy_id)
+    db.session.add(delete_record)
+    db.session.commit()
     from tasks.manage_deploys import deletedeploy
     deletedeploy.apply_async(args=[dep.deploy_id,True],queue=svr.domain_prefix)
-    return str(dep.firecracker_pid)
-    
+    return "OK"
+
+@deploy_bp.route("/<deploy_id>/status",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def depstatus(dep):
+    last_status  =request.json["last_status"]
+    if dep.last_deployment_status != "redeploying":
+        timeout = 0
+        while last_status == dep.last_deployment_status and timeout<20:
+            time.sleep(2)
+            timeout+=2
+            db.session.refresh(dep)
+    else:
+        from tasks.remote_tasks import celery
+        timeout = 0
+        while celery.AsyncResult(dep.celery_process_id).status!='SUCCESS' and  (not(celery.AsyncResult(dep.celery_process_id).failed())) and celery.AsyncResult(dep.celery_process_id).info["message"]==last_status:
+            time.sleep(2)
+            timeout+=2
+        response={}
+        response["status"]=celery.AsyncResult(dep.celery_process_id).info["message"]
+
+
+    response={}
+    response["status"]=dep.last_deployment_status
+    return jsonify(response)
+
+
+ 

@@ -10,7 +10,7 @@ import shutil
 import random
 import json
 from blueprints.admin.models import admin_servers,admin_github_tokens
-from blueprints.deployement.models import deployments
+from blueprints.deployement.models import deployments,delete_deploy
 from models import db,users
 from github import Github
 from fabric import Connection
@@ -469,7 +469,11 @@ def deletedeploy(self,deploy_id,complete_delete=False,redeploy_after_delete=Fals
 
     response = requests.post('http://localhost:2019/load', headers=headers, data=data)
     if complete_delete:
+        drecords = delete_deploy.query.filter_by(deploy_id=deploy_id).all()
+        for drecord in drecords:
+            db.session.delete(drecord)
         db.session.delete(dep)
+        
     if redeploy_after_delete:
         svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
         db.celery_process_id  = str(redeloy.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix))

@@ -41,6 +41,11 @@ class deployments(db.Model):
     forwarded_ports = db.Column(db.JSON)
     firecracker_pid = db.Column(db.Integer)
 
+class delete_deploy(db.Model):
+    delete_id= db.Column(db.Integer,primary_key = True)
+    deploy_id = db.Column(db.Integer)
+
+
 
 
     
