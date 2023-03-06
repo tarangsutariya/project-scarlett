@@ -16,7 +16,7 @@ import CloudFlare
 import copy
 cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 import random
-
+import re
 
 ##check if deployment belongs to user
 def user_owns_deployment(f):
@@ -124,7 +124,14 @@ def deployment_networking(dep):
 @user_login_required
 @user_owns_deployment
 def deployment_notifications(dep):
-    return render_template("notifications.html",dep=dep)
+    
+    emails = dep.email_notify["emails"]
+    pushovers = dep.pushover_notify["pushovers"]
+    slack = dep.slack_notify["slack"]
+    ########NOTIFICATIONS####
+    
+
+    return render_template("notifications.html",dep=dep,emails=emails,pushovers=pushovers,slack=slack)
 
 @deploy_bp.route("/<deploy_id>/envvariables")
 @user_login_required
@@ -329,6 +336,27 @@ def redeploydep(dep):
     dep.last_deployment_status = "redeploying"
     db.session.commit()
     return "OK"
+
+
+
+@deploy_bp.route("/<deploy_id>/editnotify",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def edit_notifications(dep):
+    slack = request.json["slack"]
+    emails = request.json["email"]
+    pushovers = request.json["pushover"]
+    valid_emails = []
+    pattern = r"^[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+$"
+    for email in emails:
+        if re.match(pattern, email):
+            valid_emails.append(email)
+    
+    return "OK"
+
+
+
+
 
 
 @deploy_bp.route("/<deploy_id>/status",methods=['POST'])

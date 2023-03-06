@@ -121,12 +121,50 @@
 
   
            <p>Notifications</p>
-
-           <table>
+           <label>Slack Notifications</label>
+           {%if slack%}
+           <select autocomplete="off" id="slack">
+            <option value="enabled" selected>Enabled</option>
+            <option value="disabled" >Disabled</option>
+           </select>
+           {% else %}
+           <select autocomplete="off" id="slack">
+            <option value="enabled">Enabled</option>
+            <option value="disabled" selected>Disabled</option>
+           </select>
+           {%endif%}
+          <label>Email</label> 
+          <div>
+            <input autocomplete="off" id="em" style="width: 80%; float: inline-start;">
+            <button style="width :18%; float: inline-end;" onclick="adde()">ADD</button>
+          </div>
+          <table><thead>
+            <tr><th>
+              Emails
+            </th><th></th></tr></thead><tbody id="emaill">
             
-           </table>
+              
+            </tbody>
+          </table>
+          <br><br>
+          <label>Pushover User Keys</label>
+          <div>
+            <input autocomplete="off" id="po" style="width: 80%; float: inline-start;">
+            <button style="width :18%; float: inline-end;" onclick="addp()">ADD</button>
+          </div>
 
+          <table><thead>
+            <tr><th>
+              User Keys
+            </th><th></th></tr></thead><tbody id="pushoverr">
+            <!-- <tr>
+              <td>test1@firevm.xyz</td>
+              <td><img height="24px" style="float: inline-end;" src="/static/delete.svg"></td>
+            </tr> -->
+          </tbody>
+          </table>
 
+           <button onclick="submitconfig()" id="submitbtn">Save</button>
             
 
           </div>
@@ -147,6 +185,108 @@
     <!-- Minimal theme switcher -->
     <script src="/static/js/minimal-theme-switcher.js"></script>
 
+<script>
+
+emails = {{ emails|tojson }}
+pushovers = {{ pushovers|tojson }}
+
+function renderemail(){
+let tbody = document.getElementById("emaill")
+  for(i =0;i<emails.length;i++){
+let row = document.createElement("tr")
+row.innerHTML = `<td>${emails[i]}</td>
+              <td><img height="24px" style="float: inline-end;cursor: pointer;" onclick="deletee(${i})" src="/static/delete.svg"></td>`
+tbody.appendChild(row)
+
+}
+}
+
+
+function renderover(){
+let tbody = document.getElementById("pushoverr")
+  for(i =0;i<pushovers.length;i++){
+let row = document.createElement("tr")
+row.innerHTML = `<td>${pushovers[i]}</td>
+              <td><img height="24px" style="float: inline-end;cursor: pointer;"  onclick="deletep(${i})"" src="/static/delete.svg"></td>`
+tbody.appendChild(row)
+
+}
+}
+
+function deletee(indx){
+emails.splice(indx,1)
+document.getElementById("emaill").innerHTML=""
+renderemail()
+}
+function deletep(indx){
+pushovers.splice(indx,1)
+document.getElementById("pushoverr").innerHTML=""
+renderover()
+}
+
+const validateEmail = (email) => {
+  return email.match(
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  );
+};
+
+function adde(){
+let em = document.getElementById("em").value
+document.getElementById("em").value=""
+if (!validateEmail(em)){
+  return
+}
+if(emails.includes(em)){
+  return
+}
+emails.push(em)
+document.getElementById("emaill").innerHTML=""
+renderemail()
+}
+
+function addp(){
+let em = document.getElementById("po").value
+document.getElementById("po").value=""
+if(pushovers.includes(em)){
+  return
+}
+pushovers.push(em)
+document.getElementById("pushoverr").innerHTML=""
+renderover()
+}
+
+async function submitconfig(){
+document.getElementById("submitbtn").setAttribute("aria-busy",true)
+let slack = document.getElementById("slack").value
+if(slack=="enabled"){
+  slack=true
+}else{
+  slack=false
+}
+let res = await fetch('./editnotify', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({"slack":slack,"email":emails,"pushover":pushovers
+    
+    })
+    });
+let y = await res.text()
+location.reload()
+
+
+}
+
+
+
+renderemail()
+renderover()
+
+</script>
+
+  
   </body>
 
 </html>
