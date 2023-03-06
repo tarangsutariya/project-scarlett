@@ -180,7 +180,7 @@ async function add_server(element){
 
             <!-- <div style="padding:1px 16px;height:1000px;"> -->
             <h2 id="he">Servers</h2>
-            <input id="requestsearch"  onkeyup="request_search()" placeholder="search..">
+            <input id="searb"  onkeyup="searchb()" placeholder="search..">
             <table role="grid">
               <thead>
                 <tr>
@@ -192,10 +192,11 @@ async function add_server(element){
                   <th scope="col">Manage</th>
                 </tr>
               </thead>
-              <tbody>
+              
                 {% if servers_list|length==0 %}
                 <tr><td></td><td></td><td>No Servers Seriously ?</td><td></td><td></td></tr>
                 {% else %}
+                <tbody id="tab">
               {% for svr in servers_list %}
                <tr>
 
@@ -207,6 +208,7 @@ async function add_server(element){
                   <td><a href="server/{{svr.server_id}}">more</a></td>
                 </tr>
               {% endfor %}
+            </tbody>
                 {%endif%}
             <!--      <tr>
                   <th scope="row">1</th>
@@ -224,7 +226,7 @@ async function add_server(element){
                   <td style="color: #FF2400;">Offline</td>
                   <td><a>more</a></td>
                 </tr>
-              </tbody> -->
+               -->
               <tfoot>
                 <tr>
                   <th scope="col">#</th>
@@ -305,6 +307,29 @@ async function add_server(element){
 
     <!-- Minimal theme switcher -->
     <script src="../static/js/minimal-theme-switcher.js"></script>
+
+<script>
+
+function searchb(){
+  displayall()
+  let sear = document.getElementById("searb").value
+  let tab = document.getElementById("tab").rows 
+  for(row of tab){
+   if(row.innerHTML.match(sear)){
+    continue
+   } 
+   row.style.display="none"
+  }
+}
+
+function displayall(){
+  let tab = document.getElementById("tab").rows 
+  for(row of tab){
+    row.style.display=""
+  }
+}
+</script>
+
 
   </body>
 
