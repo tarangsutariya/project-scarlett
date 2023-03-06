@@ -35,8 +35,31 @@
     document.getElementById(curr).style.display=""
     }
   }
-
-
+function searchbar(){
+displayall()
+let sear = document.getElementById("searchb").value
+for(owner of owners){
+    let ow = String(owner)
+    
+    let rows = document.getElementById(ow).rows
+    for(row of rows){
+      if(row.innerHTML.match(sear)){
+        continue
+      }
+      row.style.display="none"
+    }
+  }
+}
+function displayall(){
+  for(owner of owners){
+    let ow = String(owner)
+    
+    let rows = document.getElementById(ow).rows
+    for(row of rows){
+      row.style.display=""
+    }
+  }
+}
 
   </script>
 
@@ -122,7 +145,7 @@ location.href= ("./config/repo?id="+restext+"&token="+token)
         <option value="importfromexternal"> import from external repo </option>
         </select>
 
-        <input placeholder="search" style="width: 49.5%; float: inline-end;"> </div>
+        <input placeholder="search" style="width: 49.5%; float: inline-end;" id="searchb" onkeyup="searchbar()"> </div>
          
 
         
