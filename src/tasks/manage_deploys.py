@@ -420,61 +420,68 @@ def redeloy(self,deploy_id):
 
 @celery.task(bind=True)
 def deletedeploy(self,deploy_id,complete_delete=False,redeploy_after_delete=False):
-    
     dep = deployments.query.filter_by(deploy_id=deploy_id).first()
-    dep.last_deployment_status = "deleting"
-    db.session.commit()
-    subprocess.run(["sudo","kill","-9",str(dep.firecracker_pid)])
-    subprocess.run(["sudo","rm","-r",dep.deploy_path])
-    firecracker_socket = "/tmp/firecracker"+dep.tap_device[3:]+".socket"
-    subprocess.run(["sudo","rm",firecracker_socket])
-    subprocess.run(["sudo","ip","link","set",dep.tap_device,"down"])
-    subprocess.run(["sudo","ip","link","delete",dep.tap_device])
-    for rule in dep.forwarded_ports["PORT"]:
-        if rule["socat_pid"]==None:
-            continue
-        socat_pid = rule["socat_pid"]
-        subprocess.run(["sudo","kill","-9",str(socat_pid)])
-    subprocess.run(["sudo","kill","-9",str(dep.forwarded_ports["SSH"][0]["socat_pid"])])
-    caddy = Caddy(caddy_path)
-    for rule in dep.forwarded_ports["HTTP"]:
-        caddy.remove(rule["subdomain"])
+    try:
+        
+        dep.last_deployment_status = "deleting"
+        db.session.commit()
+        subprocess.run(["sudo","kill","-9",str(dep.firecracker_pid)])
+        subprocess.run(["sudo","rm","-r",dep.deploy_path])
+        firecracker_socket = "/tmp/firecracker"+dep.tap_device[3:]+".socket"
+        subprocess.run(["sudo","rm",firecracker_socket])
+        subprocess.run(["sudo","ip","link","set",dep.tap_device,"down"])
+        subprocess.run(["sudo","ip","link","delete",dep.tap_device])
+        for rule in dep.forwarded_ports["PORT"]:
+            if rule["socat_pid"]==None:
+                continue
+            socat_pid = rule["socat_pid"]
+            subprocess.run(["sudo","kill","-9",str(socat_pid)])
+        subprocess.run(["sudo","kill","-9",str(dep.forwarded_ports["SSH"][0]["socat_pid"])])
+        caddy = Caddy(caddy_path)
+        for rule in dep.forwarded_ports["HTTP"]:
+            caddy.remove(rule["subdomain"])
+            if complete_delete:
+                subsplit = rule["subdomain"].rsplit(".",2)
+                curr_domain = subsplit[-2]+'.'+subsplit[-1]
+                zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+                record_id = cf.zones.dns_records.get(zone_id, params={"name":rule["subdomain"],"type":"A"})[0]["id"]
+                cf.zones.dns_records.delete(zone_id,record_id)
+        headers = {
+            'Content-Type': 'text/caddyfile',
+        }
+
+        caddy.remove(dep.primary_domain)
+        caddy.remove(dep.secondary_domain)
         if complete_delete:
-            subsplit = rule["subdomain"].rsplit(".",2)
+            subsplit = dep.primary_domain.rsplit(".",2)
             curr_domain = subsplit[-2]+'.'+subsplit[-1]
             zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-            record_id = cf.zones.dns_records.get(zone_id, params={"name":rule["subdomain"],"type":"A"})[0]["id"]
+            record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.primary_domain,"type":"A"})[0]["id"]
             cf.zones.dns_records.delete(zone_id,record_id)
-    headers = {
-        'Content-Type': 'text/caddyfile',
-    }
+            #
+            subsplit = dep.secondary_domain.rsplit(".",2)
+            curr_domain = subsplit[-2]+'.'+subsplit[-1]
+            zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+            record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.secondary_domain,"type":"A"})[0]["id"]
+            cf.zones.dns_records.delete(zone_id,record_id)
 
-    caddy.remove(dep.primary_domain)
-    caddy.remove(dep.secondary_domain)
-    if complete_delete:
-        subsplit = dep.primary_domain.rsplit(".",2)
-        curr_domain = subsplit[-2]+'.'+subsplit[-1]
-        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.primary_domain,"type":"A"})[0]["id"]
-        cf.zones.dns_records.delete(zone_id,record_id)
-        #
-        subsplit = dep.secondary_domain.rsplit(".",2)
-        curr_domain = subsplit[-2]+'.'+subsplit[-1]
-        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-        record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.secondary_domain,"type":"A"})[0]["id"]
-        cf.zones.dns_records.delete(zone_id,record_id)
+        with open(caddy_path, 'rb') as f:
+            data = f.read()
 
-    with open(caddy_path, 'rb') as f:
-        data = f.read()
-
-    response = requests.post('http://localhost:2019/load', headers=headers, data=data)
-    if complete_delete:
-        drecords = delete_deploy.query.filter_by(deploy_id=deploy_id).all()
-        for drecord in drecords:
-            db.session.delete(drecord)
-        db.session.delete(dep)
-        
-    if redeploy_after_delete:
-        svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
-        db.celery_process_id  = str(redeloy.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix))
-    db.session.commit()
+        response = requests.post('http://localhost:2019/load', headers=headers, data=data)
+        if complete_delete:
+            drecords = delete_deploy.query.filter_by(deploy_id=deploy_id).all()
+            for drecord in drecords:
+                db.session.delete(drecord)
+            db.session.delete(dep)
+            
+        if redeploy_after_delete:
+            svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+            db.celery_process_id  = str(redeloy.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix))
+        db.session.commit()
+    except:
+        if complete_delete:
+            drecords = delete_deploy.query.filter_by(deploy_id=deploy_id).all()
+            for drecord in drecords:
+                db.session.delete(drecord)
+            db.session.delete(dep)
