@@ -184,9 +184,9 @@
           </tr>
 
          </table>
-         <button class="outline">Rebuild</button>
-         <button class="outline">Fetch changes</button>
-         <button class="outline">Redeploy</button>
+         <button class="outline" data-target="modal-rebuild" onClick="toggleModal(event)" id="rebuildbtn">Rebuild</button>
+         <button class="outline" data-target="modal-refetch" onClick="toggleModal(event)" id="refetchbtn" >Fetch changes</button>
+         <button class="outline" data-target="modal-redeploy" onClick="toggleModal(event)" id="redeploybtn">Redeploy</button>
          
          <button style="background-color: red; border-color: red;" data-target="modal-deletedeploy" onclick="toggleModal(event)">Delete</button>
             
@@ -243,11 +243,96 @@
 
 
 
+<dialog id="modal-refetch">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-refetch"
+      onClick="toggleModal(event)">
+    </a>
+    <h3>Refetch?</h3>
+    <p>
+      Refetch any changes from github that might have been missed ?
+    </p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-refetch"
+        onClick="toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-refetch"
+        onClick="refetchdeploy();toggleModal(event)" id="pconfirm">
+        Confirm
+      </a>
+    </footer>
+  </article>
+</dialog>
+
+<dialog id="modal-rebuild">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-rebuild"
+      onClick="toggleModal(event)">
+    </a>
+    <h3>Rebuild?</h3>
+    <p>
+      do you want to Rebuild docker containers ?
+    </p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-rebuild"
+        onClick="toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-rebuild"
+        onClick="rebuilddeploy();toggleModal(event)" id="pconfirm">
+        Confirm
+      </a>
+    </footer>
+  </article>
+</dialog>
 
 
-
-
-
+<dialog id="modal-redeploy">
+  <article>
+    <a href="#close"
+      aria-label="Close"
+      class="close"
+      data-target="modal-redeploy"
+      onClick="toggleModal(event)">
+    </a>
+    <h3>Redeploy?</h3>
+    <p>
+      Are you sure you want to redeploy this instance ?(external port forwards if configured may change)
+    </p>
+    <footer>
+      <a href="#cancel"
+        role="button"
+        class="secondary"
+        data-target="modal-redeploy"
+        onClick="toggleModal(event)">
+        Cancel
+      </a>
+      <a href="#confirm"
+        role="button"
+        data-target="modal-redeploy"
+        onClick="redeploydeploy();toggleModal(event)" id="pconfirm">
+        Confirm
+      </a>
+    </footer>
+  </article>
+</dialog>
 
 
 
@@ -295,6 +380,26 @@ location.replace('/dashboard')
 
 
 }
+
+async function refetchdeploy(){
+let res = await fetch('./{{dep.deploy_id}}/refetch')
+document.getElementById("refetchbtn").disabled=true
+
+}
+
+async function rebuilddeploy(){
+let res = await fetch('./{{dep.deploy_id}}/rebuild')
+document.getElementById("rebuildbtn").disabled=true
+
+}
+
+async function redeploydeploy(){
+let res = await fetch('./{{dep.deploy_id}}/redeploy')
+document.getElementById("redeploybtn").disabled=true
+
+}
+
+
 </script>
 
 

@@ -286,7 +286,7 @@ def deleteport(dep):
 @deploy_bp.route("/<deploy_id>/delete")
 @user_login_required
 @user_owns_deployment
-def reclonetest(dep):
+def deletedeployroute(dep):
     svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
     # from tasks.manage_deploys import redeloy
     # redeloy.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix)
@@ -296,6 +296,40 @@ def reclonetest(dep):
     from tasks.manage_deploys import deletedeploy
     deletedeploy.apply_async(args=[dep.deploy_id,True],queue=svr.domain_prefix)
     return "OK"
+
+@deploy_bp.route("/<deploy_id>/refetch")
+@user_login_required
+@user_owns_deployment
+def refetchdep(dep):
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    from tasks.manage_deploys import gitfetch
+    gitfetch.apply_async(args=[dep.deploy_id],queue=svr.domain_prefix)
+    dep.last_deployment_status = "refetching"
+    db.session.commit()
+    return "OK"
+
+@deploy_bp.route("/<deploy_id>/rebuild")
+@user_login_required
+@user_owns_deployment
+def rebuilddep(dep):
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    from tasks.manage_deploys import dockerrebuild
+    dockerrebuild.apply_async(args=[dep.deploy_id,True,False],queue=svr.domain_prefix)
+    dep.last_deployment_status = "rebuilding"
+    db.session.commit()
+    return "OK"
+
+@deploy_bp.route("/<deploy_id>/redeploy")
+@user_login_required
+@user_owns_deployment
+def redeploydep(dep):
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    from tasks.manage_deploys import deletedeploy
+    deletedeploy.apply_async(args=[dep.deploy_id,False,True],queue=svr.domain_prefix)
+    dep.last_deployment_status = "redeploying"
+    db.session.commit()
+    return "OK"
+
 
 @deploy_bp.route("/<deploy_id>/status",methods=['POST'])
 @user_login_required
@@ -315,7 +349,10 @@ def depstatus(dep):
             time.sleep(2)
             timeout+=2
         response={}
-        response["status"]=celery.AsyncResult(dep.celery_process_id).info["message"]
+        try:
+            response["status"]=celery.AsyncResult(dep.celery_process_id).info["message"]
+        except:
+            response["status"]=dep.last_deployment_status
 
 
     response={}
