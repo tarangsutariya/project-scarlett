@@ -4,6 +4,7 @@ from ..models import admin_user,admin_servers,admin_notification_settings
 from models import db,users
 from blueprints.deployement.countries import countries_to_ALPHA2,ALPHA2_to_countries
 import re
+from blueprints.deployement.models import deployments,delete_deploy
 admin_settings_bp = Blueprint("settings",__name__,template_folder="templates",static_folder="static")
 
 @admin_settings_bp.route("/")
@@ -69,8 +70,25 @@ def admin_setting_delusr():
 @admin_settings_bp.route("/deployments")
 @admin_login_required
 def admin_setttings_deployments():
-    usrs = users.query.filter_by().all()
-    return render_template("admin_deployments.html",usrs=usrs)
+    deps = deployments.query.filter_by().all()
+    rc = delete_deploy.query.filter_by().all()
+    to_dels = []
+    for r in rc:
+        to_dels.append(r.deploy_id)
+    return render_template("admin_deployments.html",deps=deps,to_del=to_dels)
+
+
+@admin_settings_bp.route("/deldep",methods=["POST"])
+@admin_login_required
+def admin_setting_deldep():
+    from tasks.manage_deploys import deletedeploy
+    dep = deployments.query.filter_by(deploy_id=request.json["deploy_id"]).first_or_404()
+    svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+    delete_record = delete_deploy(deploy_id=dep.deploy_id)
+    db.session.add(delete_record)
+    db.session.commit()
+    deletedeploy.apply_async(args=[dep.deploy_id,True],queue=svr.domain_prefix)
+    return "OK"
 
 
 @admin_settings_bp.route("/servers")

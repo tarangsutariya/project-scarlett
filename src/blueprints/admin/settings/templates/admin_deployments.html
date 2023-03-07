@@ -135,18 +135,19 @@ th {
           <div id="contentblock">
 
             <!-- <div style="padding:1px 16px;height:1000px;"> -->
-            <h2 id="he">Users</h2>
+            <h2 id="he">Deployments</h2>
             <input autocomplete="off" id="searchbar" onkeyup="searchb()">
             <table style="text-align: center;"">
                 <thead>
-                    <tr><th>#</th><th>Username</th><th>Action</th></tr>
+                    <tr><th>#</th><th>Deployment</th><th>Action</th></tr>
                 </thead>
             <tbody>
-                {% for usr in usrs %}
+                {% for dep in deps if not dep.deploy_id in to_del%}
+               
                 <tr id="r{{loop.index0}}">
-                    <td id="i{{loop.index0}}">{{usr.user_id}}</td>
-                    <td id="u{{loop.index0}}">{{usr.github_username}}</td>
-                    <td><a style="cursor:pointer;" >view</a></td>
+                    <td id="i{{loop.index0}}">{{dep.deploy_id}}</td>
+                    <td id="u{{loop.index0}}"><a href="https://{{dep.primary_domain}}">{{dep.primary_domain}}</a></td>
+                    <td><a style="cursor:pointer;"  data-target="modal-example" onclick="setusrid({{dep.deploy_id}},'{{dep.primary_domain}}');toggleModal(event)">delete</a></td>
                 </tr>
                {% endfor %} 
                 
@@ -177,7 +178,7 @@ th {
           </a>
           <h3>Are you sure ?</h3>
           <p>
-            Do you really want to delete user  <span id="username" style="font-weight: bold;"></span> ?
+            Do you really want to delete deployment <span id="username" style="font-weight: bold;"></span> ?
           </p>
           <footer>
             <a href="#cancel"
@@ -211,12 +212,12 @@ function setusrid(ui,un){
 async function deluser(){
 document.getElementById("conf").setAttribute("aria-busy",true)
 
-let res = await fetch("./delusr", {
+let res = await fetch("./deldep", {
   method: "POST", // or 'PUT'
   headers: {
     "Content-Type": "application/json",
   },
-  body: JSON.stringify({"user_id":userid}),
+  body: JSON.stringify({"deploy_id":userid}),
 })
 
 let restext = await res.text()
