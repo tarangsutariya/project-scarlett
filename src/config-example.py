@@ -1,0 +1,31 @@
+secret_key = "CHANGE THIS"
+postgres_uri = "postgresql://username:password@postgresdb"
+
+github_client_id = 'githubclientidhere'
+github_client_secret = 'githubclientsecret'
+redis_uri = "redis://redis" 
+domains = ["domain.com","domain.net","domain.co.in"]
+default_cpu = 4 #penending on available resources
+default_ram = 4096 # denending on available  resources
+default_disk = 20.0  # denending on available  resources
+minimum_ram = 256 ##ALTEAST 128
+minimum_disk = 2.2 ### BIgger than rootfs image
+minimum_cpu = 1 ##atleast 1
+cloudflare_api_key = "cloudflare api"
+storage_path = "/scarlett/" #FOLDER WHERE ALL DEPLOYMENTS ARE STORED
+rootfs_path = "/scarlett/rootfs.ext4" ##PATH TO ROOTFS IMAGE 
+kernel_path = "/vmlinux" ##PATH TO VMLINUX KERNEL IMAGE
+vlan_ip_subnet_start = "10.100.1.1" ##
+vlan_ip_subnet_end = "10.240.240.1" ##
+default_network_interface = "ens3" ## network interface with access to internet
+uid = 0  ##uid to run firecracker vm as                
+gid = 0 #gid to run firecracker vm as
+caddy_path = "/home/tarang/scarlett/Caddyfile" ##FILE TO STORE CADDY FILE
+webhook_path = "http://hostname/webhook/" ## PATH WHERE github will send webhooks
+####NOTIFICATIONS
+smtp_server = "smtp.example.com"
+smtp_port = 465
+smtp_email = "me@example.com"
+smtp_password = "password" ##TRY USING ENVIRONMENT VARIABLE INSTEAD
+pushover_token = "" ##API TOKEN FOR PUSHOVER APPLICATION 
+slack_webhook = "" ##SLACK WEBHOOK URI
