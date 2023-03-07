@@ -12,6 +12,7 @@ from celery.utils.log import get_task_logger
 from blueprints.admin.models import admin_servers
 from .remote_tasks import reportstats
 from models import db
+from blueprints.deployement.models import deployments
 logger = get_task_logger(__name__)
 
 celery = make_celery()
@@ -42,6 +43,10 @@ def serverhealthcheck():
         offline_svr.total_disk = None
         offline_svr.disk_usage = None
         db.session.commit()
+        deps = deployments.query.filter_by(server_id=offline_svr.server_id).all()
+        for dep in deps:
+            dep.health = "offline"
+            db.session.commit()
     
     for svr in active_workers:
         svr_mod = admin_servers.query.filter_by(domain_prefix=svr).first()
