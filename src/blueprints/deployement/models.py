@@ -7,7 +7,7 @@ class deployments(db.Model):
     repo_name = db.Column(db.String)
     user_id = db.Column(db.Integer)
     accessed_by_org_token = db.Column(db.Boolean)
-    org_token_id = db.Column(db.String)
+    org_token_id = db.Column(db.Integer)
     accessed_by_custom_token = db.Column(db.Boolean)
     custom_token = db.Column(db.String)
     repo_owner_id = db.Column(db.Integer)

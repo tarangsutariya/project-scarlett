@@ -348,7 +348,6 @@ def verifysubav(subdomain):
 
 
 @users_bp.route("/logout")
-@user_login_required
 def logoutuser():
     if "user_userid" in session:
         session.pop("user_userid")
