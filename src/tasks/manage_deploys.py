@@ -490,3 +490,11 @@ def deletedeploy(self,deploy_id,complete_delete=False,redeploy_after_delete=Fals
             for drecord in drecords:
                 db.session.delete(drecord)
             db.session.delete(dep)
+
+
+@celery.task
+def delete_all(user_id):
+    deps = deployments.query.filter_by(user_id=user_id).all()
+    for dep in deps:
+        svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+        delete_deploy.apply_async(args=[dep.deploy_id,True,False],queue=svr.domain_prefix)

@@ -372,5 +372,18 @@ def user_githuboauthlogin():
     session["user_login"] =True
     return redirect(url_for("auth.auth_root"))
 
+@users_bp.route("/settings")
+@user_login_required
+def user_settings():
+    return render_template("user_settings.html")
 
+@users_bp.route("/deleteaccount")
+@user_login_required
+def delete_user_accounts():
+   usr = users.query.filter_by(user_id=session["user_userid"]).first()
+   from tasks.manage_deploys import delete_all
+   delete_all.apply_async(args=[usr.user_id])
+   db.session.delete(usr)
+   db.session.commit()
+   return "OK"
 
