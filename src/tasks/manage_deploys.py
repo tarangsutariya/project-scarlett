@@ -498,3 +498,14 @@ def delete_all(user_id):
     for dep in deps:
         svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
         deletedeploy.apply_async(args=[dep.deploy_id,True,False],queue=svr.domain_prefix)
+
+@celery.task
+def add_pub_key(deploy_id,pubkey):
+    dep = deployments.query.filter_by(deploy_id=deploy_id).first()
+    with open("/tmp/publickey","w+") as pub:
+        pub.write(pubkey)
+    Connection("root@"+dep.internal_ip,connect_timeout=10).put("/tmp/publickey",'publickey.pub')
+    Connection("root@"+dep.internal_ip,connect_timeout=10).run("cat publickey.pub >> .ssh/authorized_keys")
+
+    
+

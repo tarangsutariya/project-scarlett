@@ -50,6 +50,15 @@ def user_owns_deployment(f):
     return wrap
 
 
+####helper
+from cryptography.hazmat.primitives import serialization
+
+def is_public_key_valid(public_key):
+    try:
+        serialization.load_ssh_public_key(public_key.encode(), backend=None)
+        return True
+    except Exception:
+        return False
 
 
 @deploy_bp.route("/<deploy_id>/initdeploystatus/<st>")
@@ -360,6 +369,18 @@ def edit_notifications(dep):
     return "OK"
 
 
+@deploy_bp.route("/<deploy_id>/editsettings",methods=['POST'])
+@user_login_required
+@user_owns_deployment
+def deployment_editsettings(dep):
+    dep.redeploy_process=request.json["reloadtype"]
+    db.session.commit()
+    if request.json["pubkey"]!="":
+        if not is_public_key_valid(request.json["pubkey"]):
+            return "INVALID PUBLIC KEY"
+        ##UPLOAD PUBLIC KEYS HERE
+
+    return "OK"
 
 
 

@@ -146,8 +146,9 @@
            
 
           <h7>Enter your SSH public-key here : </h7>
-          <textarea autocomplete="off"></textarea>
-          <button>Save</button> 
+          <textarea autocomplete="off" id="publickey"></textarea>
+          <p id="er" style="color:red;display: none;">INVALID PUBLIC KEY FORMAT</p>
+          <button id="savv" onclick="savee()">Save</button> 
 
           </div>
 
@@ -166,6 +167,34 @@
 
     <!-- Minimal theme switcher -->
     <script src="/static/js/minimal-theme-switcher.js"></script>
+
+<script>
+async function savee(){
+let pubkey = document.getElementById("publickey").value
+let reloadtype = document.getElementById("reloadtype").value
+document.getElementById("er").style.display="none"
+
+let res = await fetch("./editsettings", {
+  method: "POST", 
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({"pubkey":pubkey,"reloadtype":reloadtype}),
+})
+let restext = await res.text()
+
+if(restext!="OK"){
+  document.getElementById("er").style.display=""
+  return
+}
+location.reload()
+
+}
+
+
+</script>
+
+
 
   </body>
 
