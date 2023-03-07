@@ -1,14 +1,7 @@
 from app import make_celery
-import time
-import subprocess
-import psutil
-import os
-import sys
-import platform
+
 from subprocess import Popen, PIPE
-import shutil
-import random
-import json
+
 from blueprints.admin.models import admin_servers,admin_github_tokens
 from blueprints.deployement.models import deployments
 from models import db,users

@@ -71,7 +71,7 @@ def send_notifications(deploy_id,process_finished):
         subj = "%s has been %s to commit %s"%(dep.primary_domain,process_finished,dep.commit_hash[:7])
         email_body = {}
         email_body["text"]="%s has been %s to commit %s"%(dep.primary_domain,process_finished,dep.commit_hash[:7])
-        email_body["html"]="""/
+        email_body["html"]="""
         <html>
         <body>
     <p>   "<a href="https://%s">%s</a> has been %s to commit <a href="https://github.com/%s/%s/commit/%s">%s</a>            </p>

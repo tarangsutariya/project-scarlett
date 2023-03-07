@@ -43,6 +43,19 @@ def reportstats():
     svr.total_disk = round(psutil.disk_usage('/').total/1073741824,2)-1
     svr.disk_usage = round(psutil.disk_usage('/').used/1073741824,2)
     db.session.commit()
+    deps =deployments.query.filter_by(server_id=svr.server_id).all()
+    for dep in deps:
+        try:
+            usage = vm_usage(dep.internal_ip)
+            dep.health="healthy"
+            dep.ram_usage = usage["ram_usage"]
+            dep.disk_usage = usage["disk_usage"]
+            dep.cpu_usage=int(usage["load_average"]/dep.cpu_allocated)
+            db.session.commit()
+        except:
+            dep.health="offline"
+            db.session.commit()
+            continue
 
 
 @celery.task(bind=True)

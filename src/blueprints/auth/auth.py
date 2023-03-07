@@ -23,7 +23,9 @@ github = oauth.register(
     client_kwargs={'scope': 'user,repo,admin,user:email'},
 )
 
-
+@auth_bp.route("/")
+def redirecttodashboard():
+    return redirect(url_for("users.user_dashboard"))
 
 @auth_bp.route("/auth")
 def auth_root():
