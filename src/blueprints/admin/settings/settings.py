@@ -1,7 +1,7 @@
 from flask import Blueprint,render_template,session,redirect,url_for,request,flash
 from ..admin_login_manager import admin_login_required
 from ..models import admin_user,admin_servers,admin_notification_settings
-from models import db
+from models import db,users
 from blueprints.deployement.countries import countries_to_ALPHA2,ALPHA2_to_countries
 import re
 admin_settings_bp = Blueprint("settings",__name__,template_folder="templates",static_folder="static")
@@ -49,6 +49,29 @@ def update_notify():
     n.pushover = request.json["pushover"]
     db.session.commit()
     return "OK"
+
+@admin_settings_bp.route("/users")
+@admin_login_required
+def admin_settings_user():
+    usrs = users.query.filter_by().all()
+    return render_template("admin_users.html",usrs=usrs)
+
+@admin_settings_bp.route("/delusr",methods=["POST"])
+@admin_login_required
+def admin_setting_delusr():
+    from tasks.manage_deploys import delete_all
+    usr = users.query.filter_by(user_id=request.json["user_id"]).first_or_404()
+    delete_all.apply_async(args=[request.json["user_id"]])
+    db.session.delete(usr)
+    db.session.commit()
+    return "OK"
+
+@admin_settings_bp.route("/deployments")
+@admin_login_required
+def admin_setttings_deployments():
+    usrs = users.query.filter_by().all()
+    return render_template("admin_deployments.html",usrs=usrs)
+
 
 @admin_settings_bp.route("/servers")
 @admin_login_required

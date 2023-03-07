@@ -379,6 +379,9 @@ def deployment_editsettings(dep):
         if not is_public_key_valid(request.json["pubkey"]):
             return "INVALID PUBLIC KEY"
         ##UPLOAD PUBLIC KEYS HERE
+        from tasks.manage_deploys import add_pub_key
+        svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
+        add_pub_key.apply_async(args=[dep.deploy_id,request.json["pubkey"].rstrip()],queue=svr.domain_prefix)
 
     return "OK"
 
