@@ -377,7 +377,11 @@ def depstatus(dep):
         db.session.refresh(dep)
     response={}
     response["status"]=dep.last_deployment_status
-
+    response["cpu_usage"]=dep.cpu_usage
+    response["ram_usage"]=dep.ram_usage
+    response["disk_usage"]=dep.disk_usage
+    response["health"]=dep.health
+    response["commit_hash"]=dep.commit_hash
     return jsonify(response)
 
 

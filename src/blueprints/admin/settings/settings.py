@@ -34,6 +34,13 @@ def settings_admin_account():
 
     return render_template("admin_account_settings.html",username=session["admin_username"])
 
+@admin_settings_bp.route("/notifications")
+@admin_login_required
+def notifications_settings_admin():
+    return render_template("admin_notifications.html",username=session["admin_username"])
+
+
+
 @admin_settings_bp.route("/servers")
 @admin_login_required
 def settings_servers():

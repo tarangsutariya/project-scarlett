@@ -144,7 +144,7 @@
          
           <tr>
             <td>Health</td>
-            <td><span style="float: inline-end;" class="{{dep.health}}">{{dep.health}}</span></td>
+            <td><span style="float: inline-end;" class="{{dep.health}}" id="heal">{{dep.health}}</span></td>
           </tr>
           <tr>
             <td>Status</td>
@@ -160,19 +160,19 @@
           </tr>
           <tr>
             <td>Commit</td>
-            <td><a style="float: inline-end;" href="https://github.com/{{dep.repo_owner}}/{{dep.repo_name}}/commit/{{dep.commit_hash}}"> {{dep.commit_hash[:7]}} </a></td>
+            <td><a style="float: inline-end;" href="https://github.com/{{dep.repo_owner}}/{{dep.repo_name}}/commit/{{dep.commit_hash}}" id="commit"> {{dep.commit_hash[:7]}} </a></td>
           </tr>
           <tr>
             <td>CPU usage : </td>
-            <td><span style="float: inline-end;">{{dep.cpu_usage}} %</span></td>
+            <td><span style="float: inline-end;" id="cpu_usage">{{dep.cpu_usage}} %</span></td>
           </tr>
           <tr>
             <td>Ram usage : </td>
-            <td><span style="float: inline-end;">{{dep.ram_usage}}/{{dep.ram_allocated}} MB</span></td>
+            <td><span style="float: inline-end;" id="ram">{{dep.ram_usage}}/{{dep.ram_allocated}} MB</span></td>
           </tr>
           <tr>
             <td>Disk usage : </td>
-            <td><span style="float: inline-end;">{{dep.disk_usage}}/{{dep.disk_allocated}} GB</span></td>
+            <td><span style="float: inline-end;" id="disk">{{dep.disk_usage}}/{{dep.disk_allocated}} GB</span></td>
           </tr>
           <tr>
             <td>Server : </td>
@@ -343,6 +343,9 @@
 <script>
 
 function renderstatus(data){
+  let gitlink = "https://github.com/{{dep.repo_owner}}/{{dep.repo_name}}/commit/"
+  let total_ram = {{dep.ram_allocated}}
+  let total_disk = {{dep.disk_allocated}}
   let status_field = document.getElementById("laststatus")
   status_field.innerText=data["status"]
   if(data["status"]=="deployed"){
@@ -353,9 +356,19 @@ function renderstatus(data){
   }else{
     status_field.setAttribute("aria-busy",true)
   }
-
-
-  fetchstatus()
+document.getElementById("cpu_usage").innerText=`${data["cpu_usage"].toFixed(2)} %`
+document.getElementById("ram").innerText=`${data["ram_usage"]}/${total_ram} MB`
+document.getElementById("disk").innerText=`${data["disk_usage"]}/${total_disk} GB`
+if(data["health"]=="offline"){
+document.getElementById("heal").innerText="offline"
+document.getElementById("heal").setAttribute("class","offline")
+}else{
+document.getElementById("heal").innerText="healthy"
+document.getElementById("heal").setAttribute("class","healthy")
+}
+document.getElementById("commit").innerText=data["commit_hash"].substring(0,7)
+document.getElementById("commit").setAttribute("href",gitlink+data["commit_hash"])
+fetchstatus()
 }
 
 
