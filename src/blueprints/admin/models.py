@@ -28,6 +28,12 @@ class admin_token_orgs(db.Model):
     org_id = db.Column(db.Integer)
     org_name = db.Column(db.String)
 
+class admin_notification_settings(db.Model):
+    r_id = db.Column(db.Integer,primary_key=True)
+    slack = db.Column(db.Boolean)
+    email = db.Column(db.Boolean)
+    pushover = db.Column(db.Boolean)
+
 class admin_servers(db.Model):
     server_id = db.Column(db.Integer,primary_key=True)
     server_location_code = db.Column(db.String)

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
 
     <!-- Custom styles for this example -->
-    <link rel="stylesheet" href="./static/custom.css"> 
+  
 
 
 
@@ -126,25 +126,47 @@
 
             <!-- <div style="padding:1px 16px;height:1000px;"> -->
             <h2 id="he">Notifications</h2>
-            
+          
             <label>Slack</label>
-            <select autocomplete="off">
-                <option>Enabled</option>
-                <option>Disabled</option>
+            {% if n.slack %}
+            <select autocomplete="off" id="slack">
+                <option value="enabled" selected>Enabled</option>
+                <option value="disabled">Disabled</option>
             </select>
-            
+            {% else %}
+            <select autocomplete="off" id="slack">
+              <option value="enabled">Enabled</option>
+              <option value="disabled" selected>Disabled</option>
+          </select>
+            {% endif %}
             <label>Email</label>
-            <select autocomplete="off">
-                <option>Enabled</option>
-                <option>Disabled</option>
+            {% if n.email %}
+            <select autocomplete="off" id="email">
+              <option value="enabled" selected>Enabled</option>
+              <option value="disabled">Disabled</option>
             </select>
+            {% else %}
+            <select autocomplete="off" id="email">
+              <option value="enabled">Enabled</option>
+              <option value="disabled" selected>Disabled</option>
+            </select>
+            {% endif %}
+
 
             <label>Pushover</label>
-            <select autocomplete="off">
-                <option>Enabled</option>
-                <option>Disabled</option>
+            {% if n.pushover %}
+            <select autocomplete="off" id="pushover">
+              <option value="enabled" selected>Enabled</option>
+              <option value="disabled">Disabled</option>
             </select>
-          <button>Save</button>
+            {% else %}
+            <select autocomplete="off" id="pushover">
+              <option value="enabled">Enabled</option>
+              <option value="disabled" selected>Disabled</option>
+            </select>
+            {% endif %}
+
+          <button onclick="savechanges()">Save</button>
           </div>
 
     </main><!-- ./ Main -->
@@ -162,6 +184,38 @@
 
     <!-- Minimal theme switcher -->
     <script src="../static/js/minimal-theme-switcher.js"></script>
+
+<script>
+
+async function savechanges(){
+let slack = false
+let email = false
+let pushover = false
+if(document.getElementById("slack").value=="enabled"){
+  slack=true
+}
+
+if(document.getElementById("email").value=="enabled"){
+  email=true
+}
+if(document.getElementById("pushover").value=="enabled"){
+  pushover=true
+}
+
+let res = await fetch("./updatenotify", {
+  method: "POST", // or 'PUT'
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({"slack":slack,"email":email,"pushover":pushover}),
+})
+let restext = await res.text();
+location.reload()
+
+}
+
+</script>
+
 
   </body>
 

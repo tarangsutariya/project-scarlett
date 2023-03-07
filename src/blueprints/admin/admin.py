@@ -6,7 +6,7 @@ import bcrypt
 from .dashboard_manage import admin_manage
 from github import Github
 from .admin_login_manager import admin_login_required
-from .models import admin_github_tokens,admin_token_orgs,admin_user
+from .models import admin_github_tokens,admin_token_orgs,admin_user,admin_notification_settings
 from .settings.settings import admin_settings_bp
 
 
@@ -128,6 +128,8 @@ def admin_register():
     u = admin_user(username=formdata["username"])
     u.set_password(formdata["password"])
     db.session.add(u)
+    n = admin_notification_settings(slack=True,email=True,pushover=True)
+    db.session.add(n)
     db.session.commit()
     flash("user created please login","success")
     return redirect(url_for("admin.admin_login"))

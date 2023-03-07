@@ -1,6 +1,6 @@
 from flask import Blueprint,render_template,session,redirect,url_for,request,flash
 from ..admin_login_manager import admin_login_required
-from ..models import admin_user,admin_servers
+from ..models import admin_user,admin_servers,admin_notification_settings
 from models import db
 from blueprints.deployement.countries import countries_to_ALPHA2,ALPHA2_to_countries
 import re
@@ -37,9 +37,18 @@ def settings_admin_account():
 @admin_settings_bp.route("/notifications")
 @admin_login_required
 def notifications_settings_admin():
-    return render_template("admin_notifications.html",username=session["admin_username"])
+    n = admin_notification_settings.query.filter_by().first()
+    return render_template("admin_notifications.html",username=session["admin_username"],n=n)
 
-
+@admin_settings_bp.route("/updatenotify",methods=["POST"])
+@admin_login_required
+def update_notify():
+    n = admin_notification_settings.query.filter_by().first()
+    n.slack = request.json["slack"]
+    n.email = request.json["email"]
+    n.pushover = request.json["pushover"]
+    db.session.commit()
+    return "OK"
 
 @admin_settings_bp.route("/servers")
 @admin_login_required

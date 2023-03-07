@@ -7,6 +7,7 @@ import json
 import urllib.parse
 from app import make_celery
 from blueprints.deployement.models import deployments
+from blueprints.admin.models import admin_notification_settings
 celery = make_celery()
 def send_email(to_address,email_subject,email_body):
     
@@ -49,7 +50,8 @@ def send_pushover_notification(user_key,title,message):
 @celery.task
 def send_notifications(deploy_id,process_finished):
     dep = deployments.query.filter_by(deploy_id=deploy_id).first()
-    if dep.notifications["slack"]:
+    n = admin_notification_settings.query.filter_by().first()
+    if n.slack and dep.notifications["slack"] :
         if process_finished=="refetched":
             slackmessage = "New changes(commit : %s) for %s fetched"%(dep.commit_hash[:7],dep.primary_domain)
         else:
@@ -78,14 +80,22 @@ def send_notifications(deploy_id,process_finished):
         </body>
         </html>
         """%(dep.primary_domain,dep.primary_domain,process_finished,dep.repo_owner,dep.repo_name,dep.commit_hash,dep.commit_hash[:7])
-    for email in dep.notifications["email"]:
-        send_email(email,subj,email_body)
+    if n.email:
+        for email in dep.notifications["email"]:
+            try:
+                send_email(email,subj,email_body)
+            except:
+                continue
     if process_finished=="refetched":
         pushover_title = "New changes for %s fetched"%(dep.primary_domain)
         pushover_message = "New changes(commit : %s) for %s fetched"%(dep.commit_hash[:7],dep.primary_domain)
     else:
         pushover_title = "%s %s"%(dep.primary_domain,process_finished)
         pushover_message = "%s has been %s to commit %s"%(dep.primary_domain,process_finished,dep.commit_hash[:7])
-    for userkey in dep.notifications["pushover"]:
-        send_pushover_notification(userkey,pushover_title,pushover_message)
+    if n.pushover:
+        for userkey in dep.notifications["pushover"]:
+            try:
+                send_pushover_notification(userkey,pushover_title,pushover_message)
+            except:
+                continue
     
