@@ -351,7 +351,12 @@ def edit_notifications(dep):
     for email in emails:
         if re.match(pattern, email):
             valid_emails.append(email)
-    
+    new_dict = {}
+    new_dict["slack"]=slack
+    new_dict["email"]=valid_emails
+    new_dict["pushover"]=pushovers
+    dep.notifications = new_dict
+    db.session.commit()
     return "OK"
 
 

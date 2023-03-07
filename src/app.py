@@ -26,7 +26,8 @@ CELERY_TASK_LIST = [
     'tasks.periodic_tasks',
     'tasks.remote_tasks',
     'tasks.manage_deploys',
-    'tasks.webhook_tasks'
+    'tasks.webhook_tasks',
+    'tasks.notifications'
 
    
 ]

@@ -26,7 +26,7 @@ from celery.exceptions import Ignore
 
 from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path,webhook_path
 from config import cloudflare_api_key
-
+from .notifications import send_notifications
 
 cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 logger = get_task_logger(__name__)
@@ -70,6 +70,7 @@ def gitfetch(self,deploy_id):
     dep.commit_hash = g.get_repo(dep.repo_id).get_branch(dep.branch_name).commit.sha
     dep.last_deployment_status = "deployed"
     db.session.commit()
+    send_notifications.apply_async(args=[dep.deploy_id,"refetched"])
 
 @celery.task(bind=True)
 def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
@@ -111,7 +112,7 @@ def dockerrebuild(self,deploy_id,pullchange=False,use_cache= False):
         dep.containers = contn
     except:
         dep.containers = []
-    
+    send_notifications.apply_async(args=[dep.deploy_id,"re-built"])
     db.session.commit()
 
 
@@ -418,6 +419,7 @@ def redeloy(self,deploy_id):
     
     self.update_state(state='PENDING', meta={'curr': 9, 'total': 9,"message":"Done"})
     logger.info(firecracker_ip)
+    send_notifications.apply_async(args=[dep.deploy_id,"re-deplopyed"])
     logger.info("DONE")
 
 
