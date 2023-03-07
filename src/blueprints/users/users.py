@@ -13,10 +13,7 @@ from config import cloudflare_api_key
 import CloudFlare
 
 cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
-######DANGER DELETE THIS##
-@users_bp.route("/grid")
-def user_grid():
-    return render_template("testgrid.html")
+
 
 
 
