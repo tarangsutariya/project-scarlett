@@ -63,7 +63,7 @@ def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = postgres_uri
     app.secret_key=secret_key
-    app.config["SQLALCHEMY_ECHO"]=True
+    app.config["SQLALCHEMY_ECHO"]=False
     db.init_app(app)
     oauth.init_app(app)
 

@@ -28,9 +28,6 @@ logger = get_task_logger(__name__)
 def process_webhook(branch_name,commit_hash,repo_id):
     deploys = deployments.query.filter_by(branch_name=branch_name,repo_id=repo_id).all()
     for dep in deploys:
-        ###ONLY FOR TESTING
-        if dep.deploy_id<=18:
-            continue
         if dep.commit_hash == commit_hash:
             continue
         tokenn = users.query.filter_by(user_id=dep.user_id).first().github_oauth_token
