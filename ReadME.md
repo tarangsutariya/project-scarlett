@@ -3,7 +3,7 @@
 A Self-Hosted Alternative to Heroku,Netlify,Railway and Fly.io
 
 
-![Deployment Process](/images/output2.gif)
+![Deployment Process](/images/deploying.gif)
 
 Deploying changes
 ![fetching changes](images/fetching_github_changes.gif)
