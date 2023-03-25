@@ -457,7 +457,7 @@ if(details["min_disk"]>1024){
 if(details["svrs"][i]["av_disk"]>1024){
   diskav=String((details["svrs"][i]["av_disk"]/1024).toFixed(2))+" TB"
 }else{
-  diskav=String((details["svrs"][i]["av_disk"]))+" GB"
+  diskav=String((details["svrs"][i]["av_disk"]).toFixed(1))+" GB"
 }
 
 
