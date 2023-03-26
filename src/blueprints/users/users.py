@@ -323,7 +323,21 @@ def verifysubav(subdomain):
         curr_domain = subsplit[-2]+'.'+subsplit[-1]
     except:
         return "something went wrong"
-    if curr_domain not in domains:
+    
+    domain_found = False
+    for domain in domains:
+        i = len(domain)-1
+        j = len(subdomain)-1
+        while i>=0 and j>=0:
+            if domain[i]!=subdomain[j]:
+                break
+            i-=1
+            j-=1
+        if i == -1:
+            domain_found=True
+            break
+
+    if domain_found==False:
         return "something went wrong"
     new_domain = subdomain
     while deployments.query.filter_by(primary_domain=new_domain).first()!=None:
