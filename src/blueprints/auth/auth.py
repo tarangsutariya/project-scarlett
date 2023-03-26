@@ -3,8 +3,8 @@ from github import Github
 from authlib.integrations.flask_client import OAuth
 from models import db,users,user_orgs,user_requests
 from ..admin.models import admin_github_tokens,admin_user,admin_token_orgs
-from config import github_client_id,github_client_secret
-
+from config import github_client_id,github_client_secret,approved_domains
+import requests
 
 auth_bp = Blueprint("auth",__name__,template_folder="templates",static_folder="static")
 
@@ -44,6 +44,12 @@ def authorize():
     
    
    # do something with the token and profile
+    headers = {'Authorization': 'token %s'%(token["access_token"])}
+    response = requests.get('https://api.github.com/user/emails', headers=headers)
+    if response.status_code == 200:
+        emails = response.json()
+        
+
     github_client = Github(token["access_token"])
     try:
         user_raw_data = github_client.get_user().raw_data
@@ -119,7 +125,29 @@ def authorize():
                 user_belongs_to_approved_org = True
                 break
         
+        email = emails[0]['email']
+        domain = email.split('@')[-1]
+        if domain in approved_domains:
+            new_user = users(github_user_id=user_raw_data["id"],github_username=user_raw_data["login"],github_oauth_token=token["access_token"])
+            db.session.add(new_user)
+            db.session.commit()
+            for org in org_list:
+                org_to_insert = user_orgs(user_id=new_user.user_id,github_org_id=org["org_id"],github_org_name=org["org_name"])
+                db.session.add(org_to_insert)
+                db.session.commit()
+            
+            session["user_userid"]=new_user.user_id
+            session["user_githubid"]=user_raw_data["id"]
+            session["user_githubusername"]=user_raw_data["login"]
+            return redirect(url_for("users.user_dashboard"))
+
+
+
+
+
         if not user_belongs_to_approved_org:
+        
+
             if user_requests.query.filter_by(github_user_id=user_raw_data["id"]).first()!=None:
                 session["pending_request_id"]=user_requests.query.filter_by(github_user_id=user_raw_data["id"]).first().request_id
                 session["user_githubusername"]=user_raw_data["login"]
