@@ -49,4 +49,9 @@ class admin_servers(db.Model):
     total_disk = db.Column(db.Float)
     disk_usage = db.Column(db.Float)
 
-
+# class admin_repo_tokens(db.Model):
+#     r_id = db.Column(db.Integer,primary_key=True)
+#     repo_id = db.Column(db.Integer)
+#     access_token = db.Column(db.String)
+#     repo_name = db.Column(db.String)
+#     repo_owner = db.Column(db.String)
