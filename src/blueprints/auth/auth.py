@@ -3,7 +3,7 @@ from github import Github
 from authlib.integrations.flask_client import OAuth
 from models import db,users,user_orgs,user_requests
 from ..admin.models import admin_github_tokens,admin_user,admin_token_orgs
-from config import github_client_id,github_client_secret,approved_domains
+from config import github_client_id,github_client_secret,approved_domains,oauth_redirect
 import requests
 
 auth_bp = Blueprint("auth",__name__,template_folder="templates",static_folder="static")
@@ -30,7 +30,7 @@ def redirecttodashboard():
 @auth_bp.route("/auth")
 def auth_root():
     github = oauth.create_client('github')
-    redirect_uri = url_for('auth.authorize', _external=True)
+    redirect_uri = oauth_redirect
     return github.authorize_redirect(redirect_uri)
 
 
