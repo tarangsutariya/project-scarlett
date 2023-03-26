@@ -27,8 +27,9 @@ from celery.exceptions import Ignore
 from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path,webhook_path
 from config import cloudflare_api_key
 from .notifications import send_notifications
-
-cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
+cf = None
+if cloudflare_api_key!=None:
+    cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 logger = get_task_logger(__name__)
 
 
@@ -448,9 +449,10 @@ def deletedeploy(self,deploy_id,complete_delete=False,redeploy_after_delete=Fals
             if complete_delete:
                 subsplit = rule["subdomain"].rsplit(".",2)
                 curr_domain = subsplit[-2]+'.'+subsplit[-1]
-                zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-                record_id = cf.zones.dns_records.get(zone_id, params={"name":rule["subdomain"],"type":"A"})[0]["id"]
-                cf.zones.dns_records.delete(zone_id,record_id)
+                if cf!=None:
+                    zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+                    record_id = cf.zones.dns_records.get(zone_id, params={"name":rule["subdomain"],"type":"A"})[0]["id"]
+                    cf.zones.dns_records.delete(zone_id,record_id)
         headers = {
             'Content-Type': 'text/caddyfile',
         }
@@ -460,15 +462,17 @@ def deletedeploy(self,deploy_id,complete_delete=False,redeploy_after_delete=Fals
         if complete_delete:
             subsplit = dep.primary_domain.rsplit(".",2)
             curr_domain = subsplit[-2]+'.'+subsplit[-1]
-            zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-            record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.primary_domain,"type":"A"})[0]["id"]
-            cf.zones.dns_records.delete(zone_id,record_id)
+            if cf!=None:
+                zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+                record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.primary_domain,"type":"A"})[0]["id"]
+                cf.zones.dns_records.delete(zone_id,record_id)
             #
             subsplit = dep.secondary_domain.rsplit(".",2)
             curr_domain = subsplit[-2]+'.'+subsplit[-1]
-            zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-            record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.secondary_domain,"type":"A"})[0]["id"]
-            cf.zones.dns_records.delete(zone_id,record_id)
+            if cf!=None:
+                zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+                record_id = cf.zones.dns_records.get(zone_id, params={"name":dep.secondary_domain,"type":"A"})[0]["id"]
+                cf.zones.dns_records.delete(zone_id,record_id)
 
         with open(caddy_path, 'rb') as f:
             data = f.read()

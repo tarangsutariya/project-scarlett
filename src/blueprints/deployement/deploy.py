@@ -14,7 +14,9 @@ deploy_bp = Blueprint("deployments",__name__,template_folder="templates",static_
 from config import cloudflare_api_key
 import CloudFlare
 import copy
-cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
+cf = None
+if cloudflare_api_key!=None:
+    cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 import random
 import re
 
@@ -219,9 +221,10 @@ def add_http_forward(dep):
     internal_port = int(request.json["port"])
     subsplit = subdomain.rsplit(".",2)
     curr_domain = subsplit[-2]+'.'+subsplit[-1]
-    zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-    subd = subdomain.split('.')[0]
-    cf.zones.dns_records.post(zone_id, data={"name":subd,"type":"A","content":svr.ip_address})
+    if cf!=None:
+        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+        subd = subdomain.split('.')[0]
+        cf.zones.dns_records.post(zone_id, data={"name":subd,"type":"A","content":svr.ip_address})
     # dep.forwarded_ports["HTTP"].append({"subdomain":subdomain,"port":internal_port})
     new_forwarded = dict(dep.forwarded_ports)
     new_forwarded = copy.deepcopy(new_forwarded)
@@ -252,9 +255,10 @@ def deletehttpforward(dep):
     new_forwarded["HTTP"].pop(indx)
     dep.forwarded_ports=new_forwarded
     db.session.commit()
-    zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
-    record_id = cf.zones.dns_records.get(zone_id, params={"name":subdomain,"type":"A"})[0]["id"]
-    cf.zones.dns_records.delete(zone_id,record_id)
+    if cf!=None:
+        zone_id = cf.zones.get(params = {'name':curr_domain})[0]["id"]
+        record_id = cf.zones.dns_records.get(zone_id, params={"name":subdomain,"type":"A"})[0]["id"]
+        cf.zones.dns_records.delete(zone_id,record_id)
     from tasks.remote_tasks import deletehttpforward
     deletehttpforward.apply_async(args=[subdomain],queue=svr.domain_prefix)
     

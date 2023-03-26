@@ -29,8 +29,9 @@ from celery.exceptions import Ignore
 from config import storage_path,rootfs_path,kernel_path,vlan_ip_subnet_start,vlan_ip_subnet_end,default_network_interface,uid,gid,caddy_path,webhook_path
 from config import cloudflare_api_key
 
-
-cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
+cf = None
+if cloudflare_api_key!=None:
+    cf = CloudFlare.CloudFlare(token=cloudflare_api_key)
 logger = get_task_logger(__name__)
 @celery.task
 def reportstats():
@@ -248,11 +249,12 @@ def initdeloy(self,deploy_id):
         prefix_s+='.'
     prefix_s=prefix_s[:-1]
     svr = admin_servers.query.filter_by(server_id=dep.server_id).first()
-    zone_id = cf.zones.get(params = {'name':base_domain_p})[0]["id"]
-    cf.zones.dns_records.post(zone_id, data={"name":prefix_p,"type":"A","content":svr.ip_address})
+    if cf!=None:
+        zone_id = cf.zones.get(params = {'name':base_domain_p})[0]["id"]
+        cf.zones.dns_records.post(zone_id, data={"name":prefix_p,"type":"A","content":svr.ip_address})
 
-    zone_id = cf.zones.get(params = {'name':base_domain_s})[0]["id"]
-    cf.zones.dns_records.post(zone_id, data={"name":prefix_s,"type":"A","content":svr.ip_address})
+        zone_id = cf.zones.get(params = {'name':base_domain_s})[0]["id"]
+        cf.zones.dns_records.post(zone_id, data={"name":prefix_s,"type":"A","content":svr.ip_address})
     caddy = Caddy(caddy_path)
     caddy.add(dep.primary_domain,firecracker_ip,80)
     headers = {
