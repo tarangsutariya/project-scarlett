@@ -16,3 +16,4 @@ test.db
 instance
 to-do.txt
 celerybeat-schedule
+configg.py
