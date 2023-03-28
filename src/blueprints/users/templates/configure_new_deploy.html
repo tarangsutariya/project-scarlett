@@ -189,6 +189,18 @@ Range slider
 <script src="../static/js/modal.js">
    
 </script>
+<script>
+function fillbranch(){
+  let branch = document.getElementById("branch").value
+
+ document.getElementById("subdomainval").value = branch
+
+}
+
+
+</script>
+
+
 
   </head>
 
@@ -236,7 +248,7 @@ Range slider
           <label> Branch to deploy : </label>
 
 
-          <select id="branch" autocomplete="off">   
+          <select id="branch" onchange="fillbranch()" autocomplete="off">   
            {% for branch in details["branches"] %}
            <option value="{{branch}}">{{branch}}</option>
                {% endfor %}
@@ -313,7 +325,7 @@ Range slider
   <br/><br/><br/>
 <label>Subdomain : </label>
 <div>
-<input type="text" id="subdomainval" autocomplete="off" onchange="verifydomainav()" style="width: 80%; float: inline-start;">
+<input type="text" id="subdomainval" value="{{details["branches"]}}" autocomplete="off" onchange="verifydomainav()" style="width: 80%; float: inline-start;">
 <select id="subdomain" onchange="verifydomainav()" autocomplete="off" style="width: 20%; float: inline-end;">
             {% for domain in details["domains"]%}
         <option value="{{domain}}">{{domain}}</option>
@@ -640,7 +652,7 @@ if (urlParts.length === 2) {
 
 }
 
-
+verifydomainav()
 function togadv(){
   let tog = document.getElementById("toga")
   if(tog.innerText=="[show advanced options]"){

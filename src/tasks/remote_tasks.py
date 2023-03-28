@@ -318,7 +318,7 @@ def initdeloy(self,deploy_id):
             contn[container.id]=container.name[5:-2]
         dep.containers = contn
     except:
-        dep.containers = []
+        dep.containers = {}
     db.session.commit()
 
     
