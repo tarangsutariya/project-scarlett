@@ -325,7 +325,7 @@ function fillbranch(){
   <br/><br/><br/>
 <label>Subdomain : </label>
 <div>
-<input type="text" id="subdomainval" value="{{details["branches"]}}" autocomplete="off" onchange="verifydomainav()" style="width: 80%; float: inline-start;">
+<input type="text" id="subdomainval" value="{{details["branches"][0]}}" autocomplete="off" onchange="verifydomainav()" style="width: 80%; float: inline-start;">
 <select id="subdomain" onchange="verifydomainav()" autocomplete="off" style="width: 20%; float: inline-end;">
             {% for domain in details["domains"]%}
         <option value="{{domain}}">{{domain}}</option>
