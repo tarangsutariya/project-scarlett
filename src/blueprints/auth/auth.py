@@ -21,7 +21,7 @@ github = oauth.register(
     authorize_params=None,
     api_base_url='https://api.github.com/',
     #client_kwargs={'scope': 'user,repo,admin,user:email'},
-    client_kwargs={'scope': 'repo:read,read:org,user:email'},
+    client_kwargs={'scope': 'repo,read:org,user:email'},
 )
 
 @auth_bp.route("/")
