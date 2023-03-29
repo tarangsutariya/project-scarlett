@@ -155,6 +155,8 @@ def configuredeployment():
         orgg =  admin_token_orgs.query.filter_by(org_id=org_needed_to_access).first_or_404()
         tkn = admin_github_tokens.query.filter_by(token_id=orgg.token_id).first_or_404().github_token
         g=Github(tkn)
+    elif github_access_token == "sceptre":
+        g = Github(repo_token)
     elif github_access_token !=None:
         g=Github(github_access_token)
     try:
@@ -244,6 +246,11 @@ def create_new_deploy():
             dep.org_token_id = tkn.token_id
             github_token = tkn.github_token
             dep.accessed_by_custom_token=False
+        elif p_token=="sceptre":
+            dep.accessed_by_org_token=False
+            dep.accessed_by_custom_token=True
+            dep.custom_token=p_token
+            github_token=repo_token
         elif p_token!=None:
             dep.accessed_by_org_token=False
             dep.accessed_by_custom_token=True
