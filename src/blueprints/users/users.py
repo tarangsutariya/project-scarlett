@@ -249,7 +249,7 @@ def create_new_deploy():
         elif p_token=="sceptre":
             dep.accessed_by_org_token=False
             dep.accessed_by_custom_token=True
-            dep.custom_token=p_token
+            dep.custom_token=repo_token
             github_token=repo_token
         elif p_token!=None:
             dep.accessed_by_org_token=False
